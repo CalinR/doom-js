@@ -1,7 +1,14 @@
-import Vector2 from './vector2'
+import { Sector, LineDef, Vertex } from './objects'
 
 export const map1 = [
-    new Vector2(20, 70),
-    new Vector2(70, 70),
-    new Vector2(70, 90)
+    new Sector([
+        new LineDef([
+            new Vertex(20, 70),
+            new Vertex(70, 70)
+        ]),
+        new LineDef([
+            new Vertex(70, 70),
+            new Vertex(70, 150)
+        ])
+    ], 0, 20)
 ]

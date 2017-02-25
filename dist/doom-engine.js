@@ -113,18 +113,56 @@ var Camera = exports.Camera = function () {
         key: 'render',
         value: function render(map) {
             this.clear();
-            this.context.beginPath();
-            for (var i = 0; i < map.length; i++) {
-                var point = map[i];
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
 
-                if (i == 0) {
-                    this.context.moveTo(point.x, point.y);
-                } else {
-                    this.context.lineTo(point.x, point.y);
+            try {
+                for (var _iterator = map[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var sector = _step.value;
+                    var _iteratorNormalCompletion2 = true;
+                    var _didIteratorError2 = false;
+                    var _iteratorError2 = undefined;
+
+                    try {
+                        for (var _iterator2 = sector.linedefs[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                            var linedef = _step2.value;
+
+                            this.context.beginPath();
+                            this.context.moveTo(linedef.vertices[0].x, linedef.vertices[0].y);
+                            this.context.lineTo(linedef.vertices[1].x, linedef.vertices[1].y);
+                            this.context.stroke();
+                            this.context.closePath();
+                        }
+                    } catch (err) {
+                        _didIteratorError2 = true;
+                        _iteratorError2 = err;
+                    } finally {
+                        try {
+                            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                                _iterator2.return();
+                            }
+                        } finally {
+                            if (_didIteratorError2) {
+                                throw _iteratorError2;
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
                 }
             }
-            this.context.stroke();
-            this.context.closePath();
         }
     }]);
 
@@ -158,34 +196,74 @@ var FollowCamera = exports.FollowCamera = function (_Camera) {
     _createClass(FollowCamera, [{
         key: 'transformVertex',
         value: function transformVertex(point) {
+            var originX = this.canvas.width / 2;
+            var originY = this.canvas.height / 2;
             var px = point.x - this.x;
             var py = point.y - this.y;
             var ty = px * Math.cos(this.radians) + py * Math.sin(this.radians);
             var tx = px * Math.sin(this.radians) - py * Math.cos(this.radians);
 
             return {
-                x: tx,
-                y: ty
+                x: originX - tx,
+                y: originY - ty
             };
         }
     }, {
         key: 'render',
         value: function render(map) {
-            var originX = this.canvas.width / 2;
-            var originY = this.canvas.height / 2;
             this.clear();
-            this.context.beginPath();
-            for (var i = 0; i < map.length; i++) {
-                var point = map[i];
-                var transformedPoint = this.transformVertex(point);
-                if (i == 0) {
-                    this.context.moveTo(originX - transformedPoint.x, originY - transformedPoint.y);
-                } else {
-                    this.context.lineTo(originX - transformedPoint.x, originY - transformedPoint.y);
+            var _iteratorNormalCompletion3 = true;
+            var _didIteratorError3 = false;
+            var _iteratorError3 = undefined;
+
+            try {
+                for (var _iterator3 = map[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                    var sector = _step3.value;
+                    var _iteratorNormalCompletion4 = true;
+                    var _didIteratorError4 = false;
+                    var _iteratorError4 = undefined;
+
+                    try {
+                        for (var _iterator4 = sector.linedefs[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                            var linedef = _step4.value;
+
+                            this.context.beginPath();
+                            var vertex1 = this.transformVertex(linedef.vertices[0]);
+                            var vertex2 = this.transformVertex(linedef.vertices[1]);
+                            this.context.moveTo(vertex1.x, vertex1.y);
+                            this.context.lineTo(vertex2.x, vertex2.y);
+                            this.context.stroke();
+                            this.context.closePath();
+                        }
+                    } catch (err) {
+                        _didIteratorError4 = true;
+                        _iteratorError4 = err;
+                    } finally {
+                        try {
+                            if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                                _iterator4.return();
+                            }
+                        } finally {
+                            if (_didIteratorError4) {
+                                throw _iteratorError4;
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                _didIteratorError3 = true;
+                _iteratorError3 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                        _iterator3.return();
+                    }
+                } finally {
+                    if (_didIteratorError3) {
+                        throw _iteratorError3;
+                    }
                 }
             }
-            this.context.stroke();
-            this.context.closePath();
         }
     }, {
         key: 'radians',
@@ -221,55 +299,90 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
         _this2.x = x;
         _this2.z = z;
         _this2.rotation = rotation;
-        _this2.nearPlane = 100;
+        _this2.nearPlane = height / 2;
         return _this2;
     }
 
     _createClass(PerspectiveCamera, [{
         key: 'transformVertex',
-        value: function transformVertex(point) {
+        value: function transformVertex(point, height) {
+            var originX = this.canvas.width / 2;
+            var originY = this.canvas.height / 2;
             var px = point.x - this.x;
-            var pz = point.z - this.y;
+            var pz = point.y - this.y;
             var tz = px * Math.cos(this.radians) + pz * Math.sin(this.radians);
             var tx = px * Math.sin(this.radians) - pz * Math.cos(this.radians);
             var r = this.nearPlane / tz;
 
             return {
-                x: tx * r,
-                y: point.y * r
+                x: -(tx * r) + originX,
+                y: (height - 10) * r + originY
             };
         }
     }, {
         key: 'render',
         value: function render(map) {
-            var originX = this.canvas.width / 2;
-            var originY = this.canvas.height / 2;
             this.clear();
-            this.context.beginPath();
-            for (var i = 0; i < map.length; i++) {
-                var point = map[i];
+            var _iteratorNormalCompletion5 = true;
+            var _didIteratorError5 = false;
+            var _iteratorError5 = undefined;
 
-                var newPoint = {
-                    x: point.x,
-                    z: point.y,
-                    y: 20
-                };
+            try {
+                for (var _iterator5 = map[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                    var sector = _step5.value;
 
-                var transformedPoint = this.transformVertex(newPoint);
+                    var floorHeight = sector.floorHeight;
+                    var ceilingHeight = sector.ceilingHeight;
+                    var _iteratorNormalCompletion6 = true;
+                    var _didIteratorError6 = false;
+                    var _iteratorError6 = undefined;
 
-                this.context.fillRect(-transformedPoint.x + originX, transformedPoint.y + originY, 4, 4);
+                    try {
+                        for (var _iterator6 = sector.linedefs[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                            var linedef = _step6.value;
 
-                newPoint = {
-                    x: point.x,
-                    z: point.y,
-                    y: -20
-                };
-                transformedPoint = this.transformVertex(newPoint);
-
-                this.context.fillRect(-transformedPoint.x + originX, transformedPoint.y + originY, 4, 4);
+                            this.context.beginPath();
+                            var vertex1 = this.transformVertex(linedef.vertices[0], floorHeight);
+                            var vertex2 = this.transformVertex(linedef.vertices[1], floorHeight);
+                            var vertex3 = this.transformVertex(linedef.vertices[1], ceilingHeight);
+                            var vertex4 = this.transformVertex(linedef.vertices[0], ceilingHeight);
+                            this.context.moveTo(vertex1.x, vertex1.y);
+                            this.context.lineTo(vertex2.x, vertex2.y);
+                            this.context.lineTo(vertex3.x, vertex3.y);
+                            this.context.lineTo(vertex4.x, vertex4.y);
+                            this.context.lineTo(vertex1.x, vertex1.y);
+                            this.context.stroke();
+                            this.context.closePath();
+                        }
+                    } catch (err) {
+                        _didIteratorError6 = true;
+                        _iteratorError6 = err;
+                    } finally {
+                        try {
+                            if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                                _iterator6.return();
+                            }
+                        } finally {
+                            if (_didIteratorError6) {
+                                throw _iteratorError6;
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                _didIteratorError5 = true;
+                _iteratorError5 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                        _iterator5.return();
+                    }
+                } finally {
+                    if (_didIteratorError5) {
+                        throw _iteratorError5;
+                    }
+                }
             }
-            this.context.stroke();
-            this.context.closePath();
         }
     }, {
         key: 'radians',
@@ -296,13 +409,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.map1 = undefined;
 
-var _vector = __webpack_require__(5);
+var _objects = __webpack_require__(9);
 
-var _vector2 = _interopRequireDefault(_vector);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var map1 = exports.map1 = [new _vector2.default(20, 70), new _vector2.default(70, 70), new _vector2.default(70, 90)];
+var map1 = exports.map1 = [new _objects.Sector([new _objects.LineDef([new _objects.Vertex(20, 70), new _objects.Vertex(70, 70)]), new _objects.LineDef([new _objects.Vertex(70, 70), new _objects.Vertex(70, 150)])], 0, 20)];
 
 /***/ }),
 /* 2 */
@@ -511,28 +620,7 @@ var keys = {
 exports.default = keys;
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Vector2 = function Vector2(x, y) {
-    _classCallCheck(this, Vector2);
-
-    this.x = x || 0;
-    this.y = y || 0;
-};
-
-exports.default = Vector2;
-
-/***/ }),
+/* 5 */,
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -561,7 +649,7 @@ var Main = function () {
         window.lastUpdate = Date.now();
         this.camera = new _camera.Camera(300, 300);
         this.followCamera = new _camera.FollowCamera(300, 300);
-        this.perspectiveCamera = new _camera.PerspectiveCamera(300, 300);
+        this.perspectiveCamera = new _camera.PerspectiveCamera(600, 600, 0, 0, 0);
         this.player = new _player2.default(150, 150);
         this.map = _map.map1;
         this.gameLoop();
@@ -619,6 +707,58 @@ var Main = function () {
 }();
 
 new Main();
+
+/***/ }),
+/* 7 */,
+/* 8 */,
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var sectorId = 0;
+var lineDefId = 0;
+var vertexId = 0;
+var vertex3Id = 0;
+
+var Sector = exports.Sector = function Sector(linedefs) {
+    var floorHeight = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+    var ceilingHeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
+    var id = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : sectorId++;
+
+    _classCallCheck(this, Sector);
+
+    this.id = id;
+    this.linedefs = linedefs;
+    this.floorHeight = floorHeight;
+    this.ceilingHeight = ceilingHeight;
+};
+
+var LineDef = exports.LineDef = function LineDef(vectors) {
+    var id = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : lineDefId++;
+
+    _classCallCheck(this, LineDef);
+
+    this.id = id;
+    this.vertices = vectors;
+};
+
+var Vertex = exports.Vertex = function Vertex(x, y) {
+    var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : vertexId++;
+
+    _classCallCheck(this, Vertex);
+
+    this.id = id;
+    this.x = x;
+    this.y = y;
+};
 
 /***/ })
 /******/ ]);

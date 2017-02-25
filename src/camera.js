@@ -18,19 +18,15 @@ export class Camera {
 
     render(map){
         this.clear();
-        this.context.beginPath();
-        for(let i=0; i<map.length; i++){
-            let point = map[i];
-
-            if(i==0){
-                this.context.moveTo(point.x, point.y);
-            }
-            else {
-                this.context.lineTo(point.x, point.y);
+        for(let sector of map){
+            for(let linedef of sector.linedefs){
+                this.context.beginPath();
+                this.context.moveTo(linedef.vertices[0].x, linedef.vertices[0].y);
+                this.context.lineTo(linedef.vertices[1].x, linedef.vertices[1].y);
+                this.context.stroke();
+                this.context.closePath();
             }
         }
-        this.context.stroke();
-        this.context.closePath();
     }
 }
 
@@ -56,34 +52,32 @@ export class FollowCamera extends Camera {
     }
 
     transformVertex(point){
+        let originX = this.canvas.width / 2;
+        let originY = this.canvas.height / 2;
         let px = point.x - this.x;
         let py = point.y - this.y;
         let ty = px * Math.cos(this.radians) + py * Math.sin(this.radians);
         let tx = px * Math.sin(this.radians) - py * Math.cos(this.radians);
 
         return {
-            x: tx,
-            y: ty
+            x: originX - tx,
+            y: originY - ty
         }
     }
 
     render(map){
-        let originX = this.canvas.width / 2;
-        let originY = this.canvas.height / 2;
         this.clear();
-        this.context.beginPath();
-        for(let i=0; i<map.length; i++){
-            let point = map[i];
-            let transformedPoint = this.transformVertex(point);
-            if(i==0){
-                this.context.moveTo(originX - transformedPoint.x, originY - transformedPoint.y);
-            }
-            else {
-                this.context.lineTo(originX - transformedPoint.x, originY - transformedPoint.y);
+        for(let sector of map){
+            for(let linedef of sector.linedefs){
+                this.context.beginPath();
+                let vertex1 = this.transformVertex(linedef.vertices[0]);
+                let vertex2 = this.transformVertex(linedef.vertices[1]);
+                this.context.moveTo(vertex1.x, vertex1.y);
+                this.context.lineTo(vertex2.x, vertex2.y);
+                this.context.stroke();
+                this.context.closePath();
             }
         }
-        this.context.stroke();
-        this.context.closePath();
     }
 }
 
@@ -97,7 +91,7 @@ export class PerspectiveCamera extends Camera {
         this.x = x;
         this.z = z;
         this.rotation = rotation;
-        this.nearPlane = 100;
+        this.nearPlane = height / 2;
     }
 
     get radians(){
@@ -108,47 +102,40 @@ export class PerspectiveCamera extends Camera {
         this.rotation = radians * 180 / Math.PI;
     }
 
-    transformVertex(point){
+    transformVertex(point, height){
+        let originX = this.canvas.width / 2;
+        let originY = this.canvas.height / 2;
         let px = point.x - this.x;
-        let pz = point.z - this.y;
+        let pz = point.y - this.y;
         let tz = px * Math.cos(this.radians) + pz * Math.sin(this.radians);
         let tx = px * Math.sin(this.radians) - pz * Math.cos(this.radians);
         let r = this.nearPlane / tz;
 
         return {
-            x: (tx * r),
-            y: (point.y * r)
+            x: -(tx * r) + originX,
+            y: ((height - 10) * r) + originY
         }
     }
 
     render(map){
-        let originX = this.canvas.width / 2;
-        let originY = this.canvas.height / 2;
         this.clear();
-        this.context.beginPath();
-        for(let i=0; i<map.length; i++){
-            let point = map[i];
-
-            let newPoint = {
-                x: point.x,
-                z: point.y,
-                y: 20
+        for(let sector of map){
+            let floorHeight = sector.floorHeight;
+            let ceilingHeight = sector.ceilingHeight;
+            for(let linedef of sector.linedefs){
+                this.context.beginPath();
+                let vertex1 = this.transformVertex(linedef.vertices[0], floorHeight);
+                let vertex2 = this.transformVertex(linedef.vertices[1], floorHeight);
+                let vertex3 = this.transformVertex(linedef.vertices[1], ceilingHeight);
+                let vertex4 = this.transformVertex(linedef.vertices[0], ceilingHeight);
+                this.context.moveTo(vertex1.x, vertex1.y);
+                this.context.lineTo(vertex2.x, vertex2.y);
+                this.context.lineTo(vertex3.x, vertex3.y);
+                this.context.lineTo(vertex4.x, vertex4.y);
+                this.context.lineTo(vertex1.x, vertex1.y);
+                this.context.stroke();
+                this.context.closePath();
             }
-            
-            let transformedPoint = this.transformVertex(newPoint);
-
-            this.context.fillRect(-transformedPoint.x + originX, transformedPoint.y + originY, 4, 4);
-
-            newPoint = {
-                x: point.x,
-                z: point.y,
-                y: -20
-            }
-            transformedPoint = this.transformVertex(newPoint);
-
-            this.context.fillRect(-transformedPoint.x + originX, (transformedPoint.y + originY), 4, 4);
         }
-        this.context.stroke();
-        this.context.closePath();
     }
 }
