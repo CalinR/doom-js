@@ -200,6 +200,7 @@ var FollowCamera = exports.FollowCamera = function (_Camera) {
             var originY = this.canvas.height / 2;
             var px = point.x - this.x;
             var py = point.y - this.y;
+
             var ty = px * Math.cos(this.radians) + py * Math.sin(this.radians);
             var tx = px * Math.sin(this.radians) - py * Math.cos(this.radians);
 
@@ -212,6 +213,9 @@ var FollowCamera = exports.FollowCamera = function (_Camera) {
         key: 'render',
         value: function render(map) {
             this.clear();
+            var originX = this.canvas.width / 2;
+            var originY = this.canvas.height / 2;
+
             var _iteratorNormalCompletion3 = true;
             var _didIteratorError3 = false;
             var _iteratorError3 = undefined;
@@ -230,10 +234,30 @@ var FollowCamera = exports.FollowCamera = function (_Camera) {
                             this.context.beginPath();
                             var vertex1 = this.transformVertex(linedef.vertices[0]);
                             var vertex2 = this.transformVertex(linedef.vertices[1]);
-                            this.context.moveTo(vertex1.x, vertex1.y);
-                            this.context.lineTo(vertex2.x, vertex2.y);
-                            this.context.stroke();
-                            this.context.closePath();
+
+                            if (vertex1.y < originY || vertex2.y < originY) {
+                                if (vertex1.y > originY) {
+                                    var xDiff = vertex1.x - vertex2.x;
+                                    var yDiff = vertex1.y - vertex2.y;
+                                    var slope = xDiff / yDiff;
+                                    var clipY = originY - vertex2.y;
+                                    vertex1.y = originY;
+                                    vertex1.x = vertex2.x + clipY * slope;
+                                }
+                                if (vertex2.y > originY) {
+                                    var _xDiff = vertex2.x - vertex1.x;
+                                    var _yDiff = vertex2.y - vertex1.y;
+                                    var _slope = _xDiff / _yDiff;
+                                    var _clipY = originY - vertex1.y;
+                                    vertex2.y = originY;
+                                    vertex2.x = vertex1.x + _clipY * _slope;
+                                }
+
+                                this.context.moveTo(vertex1.x, vertex1.y);
+                                this.context.lineTo(vertex2.x, vertex2.y);
+                                this.context.stroke();
+                                this.context.closePath();
+                            }
                         }
                     } catch (err) {
                         _didIteratorError4 = true;
@@ -305,23 +329,39 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
 
     _createClass(PerspectiveCamera, [{
         key: 'transformVertex',
-        value: function transformVertex(point, height) {
+        value: function transformVertex(point) {
             var originX = this.canvas.width / 2;
             var originY = this.canvas.height / 2;
             var px = point.x - this.x;
-            var pz = point.y - this.y;
-            var tz = px * Math.cos(this.radians) + pz * Math.sin(this.radians);
-            var tx = px * Math.sin(this.radians) - pz * Math.cos(this.radians);
-            var r = this.nearPlane / tz;
+            var py = point.y - this.y;
+
+            var ty = px * Math.cos(this.radians) + py * Math.sin(this.radians);
+            var tx = px * Math.sin(this.radians) - py * Math.cos(this.radians);
 
             return {
-                x: -(tx * r) + originX,
-                y: (height - 10) * r + originY
+                x: tx,
+                y: ty
+            };
+        }
+    }, {
+        key: 'projectVertex',
+        value: function projectVertex(vertex, height) {
+            var originX = this.canvas.width / 2;
+            var originY = this.canvas.height / 2;
+            var r = this.nearPlane / vertex.y;
+
+            return {
+                x: -(vertex.x * r) + originX,
+                y: (height - 10) * r + originY,
+                z: vertex.y
             };
         }
     }, {
         key: 'render',
         value: function render(map) {
+            var originX = this.canvas.width / 2;
+            var originY = this.canvas.height / 2;
+
             this.clear();
             var _iteratorNormalCompletion5 = true;
             var _didIteratorError5 = false;
@@ -341,18 +381,41 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
                         for (var _iterator6 = sector.linedefs[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
                             var linedef = _step6.value;
 
-                            this.context.beginPath();
-                            var vertex1 = this.transformVertex(linedef.vertices[0], floorHeight);
-                            var vertex2 = this.transformVertex(linedef.vertices[1], floorHeight);
-                            var vertex3 = this.transformVertex(linedef.vertices[1], ceilingHeight);
-                            var vertex4 = this.transformVertex(linedef.vertices[0], ceilingHeight);
-                            this.context.moveTo(vertex1.x, vertex1.y);
-                            this.context.lineTo(vertex2.x, vertex2.y);
-                            this.context.lineTo(vertex3.x, vertex3.y);
-                            this.context.lineTo(vertex4.x, vertex4.y);
-                            this.context.lineTo(vertex1.x, vertex1.y);
-                            this.context.stroke();
-                            this.context.closePath();
+
+                            var point1 = this.transformVertex(linedef.vertices[0]);
+                            var point2 = this.transformVertex(linedef.vertices[1]);
+
+                            if (point1.y > 0 || point2.y > 0) {
+                                if (point1.y < 0) {
+                                    var xDiff = point1.x - point2.x;
+                                    var yDiff = point1.y - point2.y;
+                                    var slope = xDiff / yDiff;
+                                    var clipY = point2.y;
+                                    point1.y = 1;
+                                    point1.x = point2.x - point2.y * slope;
+                                }
+                                if (point2.y < 0) {
+                                    var _xDiff2 = point1.x - point2.x;
+                                    var _yDiff2 = point1.y - point2.y;
+                                    var _slope2 = _xDiff2 / _yDiff2;
+                                    point2.y = 1;
+                                    point2.x = point1.x - point1.y * _slope2;
+                                }
+
+                                var vertex1 = this.projectVertex(point1, floorHeight);
+                                var vertex2 = this.projectVertex(point2, floorHeight);
+                                var vertex3 = this.projectVertex(point2, ceilingHeight);
+                                var vertex4 = this.projectVertex(point1, ceilingHeight);
+
+                                this.context.beginPath();
+                                this.context.moveTo(vertex1.x, vertex1.y);
+                                this.context.lineTo(vertex2.x, vertex2.y);
+                                this.context.lineTo(vertex3.x, vertex3.y);
+                                this.context.lineTo(vertex4.x, vertex4.y);
+                                this.context.lineTo(vertex1.x, vertex1.y);
+                                this.context.stroke();
+                                this.context.closePath();
+                            }
                         }
                     } catch (err) {
                         _didIteratorError6 = true;
@@ -411,7 +474,7 @@ exports.map1 = undefined;
 
 var _objects = __webpack_require__(9);
 
-var map1 = exports.map1 = [new _objects.Sector([new _objects.LineDef([new _objects.Vertex(20, 70), new _objects.Vertex(70, 70)]), new _objects.LineDef([new _objects.Vertex(70, 70), new _objects.Vertex(70, 150)])], 0, 20)];
+var map1 = exports.map1 = [new _objects.Sector([new _objects.LineDef([new _objects.Vertex(20, 110), new _objects.Vertex(70, 110)]), new _objects.LineDef([new _objects.Vertex(70, 110), new _objects.Vertex(70, 190)])], 0, 20)];
 
 /***/ }),
 /* 2 */
@@ -650,7 +713,7 @@ var Main = function () {
         this.camera = new _camera.Camera(300, 300);
         this.followCamera = new _camera.FollowCamera(300, 300);
         this.perspectiveCamera = new _camera.PerspectiveCamera(600, 600, 0, 0, 0);
-        this.player = new _player2.default(150, 150);
+        this.player = new _player2.default(150, 150, -115);
         this.map = _map.map1;
         this.gameLoop();
     }

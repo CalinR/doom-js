@@ -9,7 +9,7 @@ class Main {
         this.camera = new Camera(300, 300);
         this.followCamera = new FollowCamera(300, 300);
         this.perspectiveCamera = new PerspectiveCamera(600, 600, 0, 0, 0);
-        this.player = new Player(150, 150);
+        this.player = new Player(150, 150, -115);
         this.map = map1;
         this.gameLoop();
     }
@@ -44,7 +44,6 @@ class Main {
         this.followCamera.context.fillStyle = 'red';
         this.followCamera.context.fillRect(-1, -10, 2, 8);
         this.followCamera.context.restore();
-
 
         // Draw Player 3d Perspective
         this.perspectiveCamera.x = this.player.x;
