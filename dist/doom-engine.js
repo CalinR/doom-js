@@ -323,7 +323,7 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
         _this2.x = x;
         _this2.z = z;
         _this2.rotation = rotation;
-        _this2.nearPlane = height / 2;
+        _this2.nearPlane = height;
         return _this2;
     }
 
@@ -408,6 +408,7 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
                                 var vertex4 = this.projectVertex(point1, ceilingHeight);
 
                                 this.context.beginPath();
+                                this.context.strokeStyle = '#000';
                                 this.context.moveTo(vertex1.x, vertex1.y);
                                 this.context.lineTo(vertex2.x, vertex2.y);
                                 this.context.lineTo(vertex3.x, vertex3.y);
@@ -472,7 +473,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.map1 = undefined;
 
-var _objects = __webpack_require__(9);
+var _objects = __webpack_require__(5);
 
 var map1 = exports.map1 = [new _objects.Sector([new _objects.LineDef([new _objects.Vertex(20, 110), new _objects.Vertex(70, 110)]), new _objects.LineDef([new _objects.Vertex(70, 110), new _objects.Vertex(70, 190)])], 0, 20)];
 
@@ -683,7 +684,56 @@ var keys = {
 exports.default = keys;
 
 /***/ }),
-/* 5 */,
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var sectorId = 0;
+var lineDefId = 0;
+var vertexId = 0;
+var vertex3Id = 0;
+
+var Sector = exports.Sector = function Sector(linedefs) {
+    var floorHeight = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+    var ceilingHeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
+    var id = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : sectorId++;
+
+    _classCallCheck(this, Sector);
+
+    this.id = id;
+    this.linedefs = linedefs;
+    this.floorHeight = floorHeight;
+    this.ceilingHeight = ceilingHeight;
+};
+
+var LineDef = exports.LineDef = function LineDef(vectors) {
+    var id = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : lineDefId++;
+
+    _classCallCheck(this, LineDef);
+
+    this.id = id;
+    this.vertices = vectors;
+};
+
+var Vertex = exports.Vertex = function Vertex(x, y) {
+    var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : vertexId++;
+
+    _classCallCheck(this, Vertex);
+
+    this.id = id;
+    this.x = x;
+    this.y = y;
+};
+
+/***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -713,7 +763,7 @@ var Main = function () {
         this.camera = new _camera.Camera(300, 300);
         this.followCamera = new _camera.FollowCamera(300, 300);
         this.perspectiveCamera = new _camera.PerspectiveCamera(600, 600, 0, 0, 0);
-        this.player = new _player2.default(150, 150, -115);
+        this.player = new _player2.default(0, 200, -45);
         this.map = _map.map1;
         this.gameLoop();
     }
@@ -770,58 +820,6 @@ var Main = function () {
 }();
 
 new Main();
-
-/***/ }),
-/* 7 */,
-/* 8 */,
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var sectorId = 0;
-var lineDefId = 0;
-var vertexId = 0;
-var vertex3Id = 0;
-
-var Sector = exports.Sector = function Sector(linedefs) {
-    var floorHeight = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-    var ceilingHeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
-    var id = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : sectorId++;
-
-    _classCallCheck(this, Sector);
-
-    this.id = id;
-    this.linedefs = linedefs;
-    this.floorHeight = floorHeight;
-    this.ceilingHeight = ceilingHeight;
-};
-
-var LineDef = exports.LineDef = function LineDef(vectors) {
-    var id = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : lineDefId++;
-
-    _classCallCheck(this, LineDef);
-
-    this.id = id;
-    this.vertices = vectors;
-};
-
-var Vertex = exports.Vertex = function Vertex(x, y) {
-    var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : vertexId++;
-
-    _classCallCheck(this, Vertex);
-
-    this.id = id;
-    this.x = x;
-    this.y = y;
-};
 
 /***/ })
 /******/ ]);

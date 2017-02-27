@@ -115,7 +115,7 @@ export class PerspectiveCamera extends Camera {
         this.x = x;
         this.z = z;
         this.rotation = rotation;
-        this.nearPlane = height / 2;
+        this.nearPlane = height;
     }
 
     get radians(){
@@ -189,6 +189,7 @@ export class PerspectiveCamera extends Camera {
                     let vertex4 = this.projectVertex(point1, ceilingHeight);
 
                     this.context.beginPath();
+                    this.context.strokeStyle = '#000';
                     this.context.moveTo(vertex1.x, vertex1.y);
                     this.context.lineTo(vertex2.x, vertex2.y);
                     this.context.lineTo(vertex3.x, vertex3.y);
@@ -196,6 +197,7 @@ export class PerspectiveCamera extends Camera {
                     this.context.lineTo(vertex1.x, vertex1.y);
                     this.context.stroke();
                     this.context.closePath();
+
                 }
             }
         }

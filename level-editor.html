@@ -1,0 +1,30 @@
+<!doctype>
+<html>
+    <head>
+        <title>Level Editor</title>
+        <link rel="stylesheet" type="text/css" href="dist/editor.css" />
+        
+    </head>
+    <body>
+        <ul class="toolbar">
+            <li>
+                <button onclick="editor.save()">Save As</button>
+            </li>
+            <li>
+                <input type="radio" name="tools" id="select" onchange="editor.changeTool('select')" /><label for="select">Select</label>
+            </li>
+            <li>
+                <input type="radio" name="tools" id="wall" onchange="editor.changeTool('wall')" /><label for="wall">Wall</label>
+            </li>
+            <li>
+                <input type="checkbox" onchange="editor.toggleSnap(event)" name="snap" id="snap"/><label for="snap">Snap To Grid</label>
+            </li>
+        </ul>
+        <div class="editor-container"></div>
+        <a href="" id="download" style="display: none;"></a>
+        <script src="dist/editor.js"></script>
+        <script>
+            var editor = new Editor;
+        </script>
+    </body>
+</html>

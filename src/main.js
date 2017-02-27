@@ -9,7 +9,7 @@ class Main {
         this.camera = new Camera(300, 300);
         this.followCamera = new FollowCamera(300, 300);
         this.perspectiveCamera = new PerspectiveCamera(600, 600, 0, 0, 0);
-        this.player = new Player(150, 150, -115);
+        this.player = new Player(0, 200, -45);
         this.map = map1;
         this.gameLoop();
     }

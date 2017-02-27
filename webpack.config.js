@@ -26,5 +26,30 @@ module.exports = [
                 }
             })
         ]
+    },
+    {
+        entry  : './src/editor.js',
+        output : {
+            path     : './dist',
+            filename : 'editor.js'
+        },
+        module : {
+            loaders: [ {
+                test   : /\.js$/,
+                loader : 'babel-loader'
+            },
+                {
+                    test: /\.jsx$/,
+                    loader: 'babel-loader'
+                }
+            ]
+        },
+        plugins: [
+            new webpack.DefinePlugin({
+                'process.env': {
+                    'NODE_ENV': '"' + process.env.NODE_ENV + '"'
+                }
+            })
+        ]
     }
 ];
