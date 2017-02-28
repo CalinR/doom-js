@@ -19,7 +19,7 @@ class Editor {
         this.canvas.style.zIndex = '2';
         this.gridSize = 16;
         this.gridScale = 2;
-        this.tool = 'select';
+        this._tool = 'select';
         this.snap = false;
         this.sectors = [];
         this.selectedSector = null;
@@ -31,6 +31,11 @@ class Editor {
         }
         this.verticesToAdd = [];
         this.hoveredVertex = null;
+        this._selectedObject = null;
+        this.ui = {
+            edit: document.getElementById('edit'),
+            editButton: document.getElementById('edit-button')
+        }
 
         document.getElementsByClassName('editor-container')[0].appendChild(this.grid);
         document.getElementsByClassName('editor-container')[0].appendChild(this.canvas);
@@ -39,6 +44,30 @@ class Editor {
         this.drawGrid();
         this.bindMouse();
         this.update();
+        this.updateUI();
+    }
+
+    get tool(){
+        return this._tool;
+    }
+
+    set tool(value){
+        if(this._tool != value){
+            this._tool = value;
+            this.selectedObject = null;
+            this.updateUI();
+        }
+    }
+
+    get selectedObject(){
+        return this._selectedObject;
+    }
+
+    set selectedObject(value){
+        if(this._selectedObject != value){
+            this._selectedObject = value;
+            this.updateUI();
+        }
     }
 
     bindMouse(){
@@ -46,11 +75,14 @@ class Editor {
             if(this.tool == 'wall'){
                 this.drawWall(event);
             }
+            else if(this.tool == 'select'){
+                this.selectObject(event);
+            }
         }
         this.canvas.onmousedown = (event) => {
-            // if(this.tool == 'select'){
-            //     this.selectObject(event);
-            // }
+            if(this.tool == 'select'){
+                this.dragObject(event);
+            }
         }
         this.canvas.onmouseup = () => {
             this.dragging = null;
@@ -81,41 +113,14 @@ class Editor {
 
                 this.hoverPoint = {x, y}
             }
-
-            // if(this.tool == 'wall'){
-            //     if(this.selectedSector){
-            //         for(let n of this.selectedSector.vertices){
-            //             if(x < n.x + this.gridSize && x > n.x - this.gridSize && y < n.y + this.gridSize && y > n.y -this.gridSize){
-            //                 x = n.x;
-            //                 y = n.y;
-            //             }
-            //         }
-            //     }
-
-            //     this.hoverPoint = {
-            //         x: x,
-            //         y: y
-            //     }
-            // }
-            // else if(this.tool == 'select'){
-            //     if(this.dragging){
-            //         if(this.dragging.type() == 'node'){
-            //             this.dragging.x = x;
-            //             this.dragging.y = y;
-            //         }
-            //         else if(this.dragging.type() == 'sector') {
-            //             let xOffset = x - this.startDrag.x;
-            //             let yOffset = y - this.startDrag.y;
-
-            //             for(let node of this.dragging.nodes){
-            //                 node.x += xOffset;
-            //                 node.y += yOffset;
-            //             }
-            //             this.startDrag.x = x;
-            //             this.startDrag.y = y;
-            //         }
-            //     }
-            // }
+            else if(this.tool == 'select'){
+                if(this.dragging){
+                    if(this.dragging.type() == 'vertex'){
+                        this.dragging.x = x;
+                        this.dragging.y = y;
+                    }
+                }
+            }
         }
         this.canvas.onmouseleave = (event) => {
             this.hoverPoint = null;
@@ -123,48 +128,96 @@ class Editor {
     }
 
     selectObject(event){
-        // let x = event.offsetX / this.gridScale;
-        // let y = event.offsetY / this.gridScale;
-        // let hitObject = null;
+        let x = event.offsetX / this.gridScale;
+        let y = event.offsetY / this.gridScale;
+        let hitObject = null;
 
-        // for(let sector of this.sectors){
-        //     for(let vertex of sector.vertices){
-        //         this.hitContext.clearRect(0, 0, this.hitCanvas.width, this.hitCanvas.height);
-        //         this.hitContext.beginPath();
-        //         this.hitContext.rect((vertex.x * this.gridScale) - 4, (vertex.y * this.gridScale) - 4, 8, 8);
-        //         if(this.hitContext.isPointInPath(x * this.gridScale, y * this.gridScale)){
-        //             hitObject = vertex;
-        //             break;
-        //         }
-        //         this.hitContext.closePath();
-        //     }
+        for(let sector of this.sectors){
+            for(let linedef of sector.linedefs){
+                this.hitContext.clearRect(0, 0, this.hitCanvas.width, this.hitCanvas.height);
+                this.hitContext.beginPath();
+                this.hitContext.strokeStyle = 'blue';
+                this.hitContext.moveTo(linedef.startVertex.x * this.gridScale, linedef.startVertex.y * this.gridScale);
+                this.hitContext.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
+                this.hitContext.lineWidth = 12;
+                this.hitContext.stroke();
+                this.hitContext.closePath();
+                this.hitContext.clearRect((linedef.startVertex.x * this.gridScale)-4, (linedef.startVertex.y * this.gridScale)-4, 8, 8);
+                this.hitContext.clearRect((linedef.endVertex.x * this.gridScale)-4, (linedef.endVertex.y * this.gridScale)-4, 8, 8);
+                let hitData = this.hitContext.getImageData(x * this.gridScale, y * this.gridScale, 1, 1).data;
+                if(hitData[0] != 0 || hitData[1] != 0 || hitData[2] != 0 || hitData[3] != 0){
+                    hitObject = linedef;
+                    break;
+                }
+            }
+            if(!hitObject){
+                this.hitContext.beginPath();
+                for(let i=0; i<sector.linedefs.length; i++){
+                    let linedef = sector.linedefs[i];
 
-        //     if(!hitObject){
-        //         this.hitContext.clearRect(0, 0, this.hitCanvas.width, this.hitCanvas.height);
-        //         this.hitContext.beginPath();
-        //         for(let vertex of sector.vertices){
-        //             this.hitContext.lineTo(vertex.x * this.gridScale, vertex.y * this.gridScale);
-        //         }
-        //         if(this.hitContext.isPointInPath(x * this.gridScale, y * this.gridScale)){
-        //             hitObject = sector;
-        //             break;
-        //         }
-        //         this.hitContext.closePath();
-        //     }
-        // }
+                    if(i==0){
+                        this.hitContext.moveTo(linedef.startVertex.x * this.gridScale, linedef.startVertex.y * this.gridScale);
+                        this.hitContext.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
+                    }
+                    else {
+                        this.hitContext.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
+                    }
+                }
+                this.hitContext.fill();
+                for(let i=0; i<sector.linedefs.length; i++){
+                    let linedef = sector.linedefs[i];
+                    this.hitContext.clearRect((linedef.startVertex.x * this.gridScale)-4, (linedef.startVertex.y * this.gridScale)-4, 8, 8);
+                    this.hitContext.clearRect((linedef.endVertex.x * this.gridScale)-4, (linedef.endVertex.y * this.gridScale)-4, 8, 8);
+                }
+                let hitData = this.hitContext.getImageData(x * this.gridScale, y * this.gridScale, 1, 1).data;
+                if(hitData[0] != 0 || hitData[1] != 0 || hitData[2] != 0 || hitData[3] != 0){
+                    hitObject = sector;
+                    break;
+                }
+                this.hitContext.closePath();
+            }
+        }
 
-        // if(hitObject){
-        //     this.dragging = hitObject;
-        //     this.startDrag.x = x;
-        //     this.startDrag.y = y;
-        // }
-        // else {
-        //     this.startDrag = {
-        //         x: 0,
-        //         y: 0
-        //     }
-        // }
-        // console.log(hitObject);
+        this.selectedObject = hitObject;
+    }
+
+    dragObject(event){
+        let x = event.offsetX / this.gridScale;
+        let y = event.offsetY / this.gridScale;
+        let hitObject = null;
+
+        for(let sector of this.sectors){
+            for(let linedef of sector.linedefs){
+                this.hitContext.clearRect(0, 0, this.hitCanvas.width, this.hitCanvas.height);
+                this.hitContext.beginPath();
+                this.hitContext.rect((linedef.startVertex.x * this.gridScale) - 4, (linedef.startVertex.y * this.gridScale) - 4, 8, 8);
+                if(this.hitContext.isPointInPath(x * this.gridScale, y * this.gridScale)){
+                    hitObject = linedef.startVertex;
+                    break;
+                }
+                this.hitContext.closePath();
+
+                this.hitContext.beginPath();
+                this.hitContext.rect((linedef.endVertex.x * this.gridScale) - 4, (linedef.endVertex.y * this.gridScale) - 4, 8, 8);
+                if(this.hitContext.isPointInPath(x * this.gridScale, y * this.gridScale)){
+                    hitObject = linedef.endVertex;
+                    break;
+                }
+                this.hitContext.closePath();
+            }
+        }
+
+        if(hitObject){
+            this.dragging = hitObject;
+            this.startDrag.x = x;
+            this.startDrag.y = y;
+        }
+        else {
+            this.startDrag = {
+                x: 0,
+                y: 0
+            }
+        }
     }
 
     drawWall(event){
@@ -198,21 +251,13 @@ class Editor {
         if(this.verticesToAdd.length>1){
             let lastVertex = this.verticesToAdd[this.verticesToAdd.length-1];
             for(let linedef of window.linedefs){
-                let startMatch = this.checkMatch(linedef.startVertex, {x,y}, lastVertex);
-                let endMatch = this.checkMatch(linedef.endVertex, {x,y}, lastVertex);
-                if(startMatch && endMatch){
+                let match = linedef.checkMatch({x,y}, lastVertex);
+                if(match){
                     foundLineDef = true;
                     this.selectedSector.add(linedef);
-                    if(linedef.startVertex.x == x && linedef.startVertex.y == y){
-                        vertex = linedef.startVertex;
-                        this.verticesToAdd.push(vertex);
-                        addVertex = false;
-                    }
-                    else if (linedef.endVertex.x == x && linedef.endVertex.y == y){
-                        vertex = linedef.endVertex;
-                        this.verticesToAdd.push(vertex);
-                        addVertex = false;
-                    }
+                    vertex = match;
+                    this.verticesToAdd.push(match);
+                    addVertex = false;
                     break;
                 }
             }
@@ -220,7 +265,18 @@ class Editor {
 
         if(!foundLineDef){
             if(addVertex){
-                vertex = new Vertex(x, y);
+                let foundVertex = false;
+                for(let v of window.vertices){
+                    if(v.x == x && v.y == y){
+                        foundVertex = v;
+                    }
+                }
+                if(foundVertex){
+                    vertex = foundVertex;
+                }
+                else {
+                    vertex = new Vertex(x, y);
+                }
             }
 
             this.verticesToAdd.push(vertex);
@@ -237,16 +293,6 @@ class Editor {
             this.verticesToAdd = [];
             this.selectedSector = null;
         }
-    }
-
-    checkMatch(haystack, needle1, needle2){
-        if(haystack.x == needle1.x && haystack.y == needle1.y){
-            return true;
-        }
-        else if(haystack.x == needle2.x && haystack.y == needle2.y){
-            return true;
-        }
-        return false;
     }
 
     drawGrid(){
@@ -357,12 +403,70 @@ class Editor {
         }
     }
 
+    edit(){
+        let editType = this.selectedObject ? this.selectedObject.type() : null;
+
+        console.log(editType);
+    }
+
+    drawSelections(){
+        if(this.selectedObject){
+            switch(this.selectedObject.type()){
+                case 'linedef':
+                    this.context.fillStyle = '#FFCF4B';
+                    this.context.beginPath();
+                    this.context.strokeStyle = '#FFCF4B';
+                    this.context.lineWidth = 4;
+                    this.context.moveTo(this.selectedObject.startVertex.x * this.gridScale, this.selectedObject.startVertex.y * this.gridScale);
+                    this.context.lineTo(this.selectedObject.endVertex.x * this.gridScale, this.selectedObject.endVertex.y * this.gridScale);
+                    this.context.stroke();
+                    this.context.closePath();
+                    this.context.fillRect((this.selectedObject.startVertex.x * this.gridScale)-6, (this.selectedObject.startVertex.y * this.gridScale)-6, 12, 12);
+                    this.context.fillRect((this.selectedObject.endVertex.x * this.gridScale)-6, (this.selectedObject.endVertex.y * this.gridScale)-6, 12, 12);
+                    break;
+                case 'sector':
+                    this.context.beginPath();
+                    this.context.strokeStyle = '#FFCF4B';
+                    this.context.lineWidth = 4;
+                    for(let i=0; i<this.selectedObject.linedefs.length; i++){
+                        let linedef = this.selectedObject.linedefs[i];
+                        
+                        if(i==0){
+                            this.context.moveTo(linedef.startVertex.x * this.gridScale, linedef.startVertex.y * this.gridScale);
+                            this.context.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
+                        }
+                        else {
+                            this.context.lineTo(linedef.startVertex.x * this.gridScale, linedef.startVertex.y * this.gridScale);
+                            this.context.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
+                        }
+                        this.context.fillStyle = '#FFCF4B';
+                        this.context.fillRect((linedef.startVertex.x * this.gridScale)-6, (linedef.startVertex.y * this.gridScale)-6, 12, 12);
+                        this.context.fillRect((linedef.endVertex.x * this.gridScale)-6, (linedef.endVertex.y * this.gridScale)-6, 12, 12);
+                    }
+                    this.context.fillStyle = 'rgba(255, 207, 75, 0.2)';
+                    this.context.stroke();
+                    this.context.fill();
+                    this.context.closePath();
+                    break;
+            }
+        }
+    }
+
     update(){
         this.clear();
         this.drawSectors();
         this.drawTools();
+        this.drawSelections();
 
         window.requestAnimationFrame(() => this.update());
+    }
+
+    updateUI(){
+        console.log('updated ui');
+        this.ui.edit.style.display = this.selectedObject ? '' : 'none';
+        this.ui.editButton.style.display = this.selectedObject ? '' : 'none';
+        this.ui.editButton.innerHTML = `Edit ${this.selectedObject ? this.selectedObject.toString() : ''}`;
+
     }
 
 }

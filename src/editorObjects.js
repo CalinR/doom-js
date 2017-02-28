@@ -29,6 +29,10 @@ export class Vertex {
     type(){
         return 'vertex';
     }
+
+    toString(){
+        return 'Vertex';
+    }
 }
 
 export class LineDef {
@@ -46,8 +50,31 @@ export class LineDef {
         return this.parents.length > 1;
     }
 
+    checkMatch(match1, match2){
+        let found_match = false;
+        if((this.startVertex.x == match1.x && this.startVertex.y == match1.y) || (this.endVertex.x == match1.x && this.endVertex.y == match1.y)){
+            found_match = true;
+        }
+        if((this.startVertex.x == match2.x && this.startVertex.y == match2.y) || (this.endVertex.x == match2.x && this.endVertex.y == match2.y)) {
+            if(found_match){
+                if(this.startVertex.x == match1.x && this.startVertex.y == match1.y){
+                    return this.startVertex;
+                }
+                else {
+                    return this.endVertex;
+                }
+            }
+        }
+
+        return false;
+    }
+
     type(){
         return 'linedef';
+    }
+
+    toString(){
+        return 'Linedef';
     }
 }
 
@@ -66,5 +93,9 @@ export class Sector {
     add(linedef){
         linedef.parents.push(this);
         this.linedefs.push(linedef);
+    }
+
+    toString(){
+        return 'Sector';
     }
 }

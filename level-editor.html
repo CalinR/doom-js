@@ -19,6 +19,9 @@
             <li>
                 <input type="checkbox" onchange="editor.toggleSnap(event)" name="snap" id="snap"/><label for="snap">Snap To Grid</label>
             </li>
+            <li id="edit">
+                <button id="edit-button" onclick="editor.edit()">Edit</button>
+            </li>
         </ul>
         <div class="editor-container"></div>
         <a href="" id="download" style="display: none;"></a>
