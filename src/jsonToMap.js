@@ -1,6 +1,6 @@
 import { Sector, LineDef, Vertex } from './objects'
 
-const GenerateMap = (map) => {
+const JsonToMap = (map) => {
     let sectors = [];
     for(let sector of map){
         let linedefs = [];
@@ -24,4 +24,4 @@ const GenerateMap = (map) => {
     return sectors;
 }
 
-export default GenerateMap;
+export default JsonToMap;

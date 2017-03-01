@@ -322,6 +322,31 @@ var Sector = exports.Sector = function () {
         this.closed = closed;
         this.floorHeight = 0;
         this.ceilingHeight = 10;
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+            for (var _iterator2 = linedefs[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                var linedef = _step2.value;
+
+                linedef.parents.push(this);
+            }
+        } catch (err) {
+            _didIteratorError2 = true;
+            _iteratorError2 = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                    _iterator2.return();
+                }
+            } finally {
+                if (_didIteratorError2) {
+                    throw _iteratorError2;
+                }
+            }
+        }
+
         window.sectors.push(this);
     }
 
@@ -389,14 +414,22 @@ var LinedefModal = function (_Modal) {
         key: 'changeLinedef',
         value: function changeLinedef(linedef) {
             this.linedef = linedef;
-            this.templateInner = '<div class="input-row">\n            <label for="left_sidedef">Left Sidedef</label>\n            <input type="color" name="left_sidedef" class="left-sidedef" id="left_sidedef" value="' + this.linedef.leftSidedef + '" />\n        </div>\n        <div class="input-row">\n            <label for="right_sidedef">Right Sidedef</label>\n            <input type="color" name="right_sidedef" class="right-sidedef" id="right_sidedef" value="' + this.linedef.rightSidedef + '" />\n        </div>';
+            this.templateInner = '<div class="input-row">\n            <label for="left_sidedef">Left Sidedef</label>\n            <input type="text" name="left_sidedef" class="left-sidedef" id="left_sidedef" value="' + this.linedef.leftSidedef + '" />\n        </div>';
+
+            if (this.linedef.parents.length > 1) {
+                this.templateInner += '<div class="input-row">\n                <label for="right_sidedef">Right Sidedef</label>\n                <input type="text" name="right_sidedef" class="right-sidedef" id="right_sidedef" value="' + this.linedef.rightSidedef + '" />\n            </div>';
+            }
             this.visible = true;
         }
     }, {
         key: 'save',
         value: function save() {
             this.linedef.leftSidedef = this.domElement.getElementsByClassName('left-sidedef')[0].value;
-            this.linedef.rightSidedef = this.domElement.getElementsByClassName('right-sidedef')[0].value;
+            if (this.linedef.parents.length > 1) {
+                this.linedef.rightSidedef = this.domElement.getElementsByClassName('right-sidedef')[0].value;
+            } else {
+                this.linedef.rightSidedef = null;
+            }
             _get(LinedefModal.prototype.__proto__ || Object.getPrototypeOf(LinedefModal.prototype), 'save', this).call(this);
         }
     }]);
@@ -488,6 +521,10 @@ var _sectorModal2 = _interopRequireDefault(_sectorModal);
 var _linedefModal = __webpack_require__(2);
 
 var _linedefModal2 = _interopRequireDefault(_linedefModal);
+
+var _editableMap = __webpack_require__(7);
+
+var _editableMap2 = _interopRequireDefault(_editableMap);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1025,7 +1062,6 @@ var Editor = function () {
                 for (var _iterator11 = this.sectors[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
                     var sector = _step11.value;
 
-
                     if (sector.closed) {
                         this.context.beginPath();
                         for (var i = 0; i < sector.linedefs.length; i++) {
@@ -1110,88 +1146,9 @@ var Editor = function () {
             }
         }
     }, {
-        key: 'generateJSON',
-        value: function generateJSON() {
-            var json = [];
-
-            var _iteratorNormalCompletion13 = true;
-            var _didIteratorError13 = false;
-            var _iteratorError13 = undefined;
-
-            try {
-                for (var _iterator13 = this.sectors[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
-                    var sector = _step13.value;
-
-                    var linedefs = [];
-                    var _iteratorNormalCompletion14 = true;
-                    var _didIteratorError14 = false;
-                    var _iteratorError14 = undefined;
-
-                    try {
-                        for (var _iterator14 = sector.linedefs[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
-                            var linedef = _step14.value;
-
-                            var currentLinedef = {
-                                id: linedef.id,
-                                startVertex: {
-                                    id: linedef.startVertex.id,
-                                    x: linedef.startVertex.x,
-                                    y: linedef.startVertex.y
-                                },
-                                endVertex: {
-                                    id: linedef.endVertex.id,
-                                    x: linedef.endVertex.x,
-                                    y: linedef.endVertex.y
-                                },
-                                leftSidedef: linedef.leftSidedef,
-                                rightSidedef: linedef.rightSidedef
-                            };
-                            linedefs.push(currentLinedef);
-                        }
-                    } catch (err) {
-                        _didIteratorError14 = true;
-                        _iteratorError14 = err;
-                    } finally {
-                        try {
-                            if (!_iteratorNormalCompletion14 && _iterator14.return) {
-                                _iterator14.return();
-                            }
-                        } finally {
-                            if (_didIteratorError14) {
-                                throw _iteratorError14;
-                            }
-                        }
-                    }
-
-                    var currentSector = {
-                        id: sector.id,
-                        linedefs: linedefs,
-                        floorHeight: sector.floorHeight,
-                        ceilingHeight: sector.ceilingHeight
-                    };
-                    json.push(currentSector);
-                }
-            } catch (err) {
-                _didIteratorError13 = true;
-                _iteratorError13 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion13 && _iterator13.return) {
-                        _iterator13.return();
-                    }
-                } finally {
-                    if (_didIteratorError13) {
-                        throw _iteratorError13;
-                    }
-                }
-            }
-
-            return json;
-        }
-    }, {
         key: 'save',
         value: function save() {
-            var json = this.generateJSON();
+            var json = _editableMap2.default.toJSON(this.sectors);
             var file = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json, null, '\t'));
             var filename = prompt("Enter Filename", "level1");
             if (filename) {
@@ -1200,6 +1157,18 @@ var Editor = function () {
                 downloadAnchor.setAttribute('download', filename + '.json');
                 downloadAnchor.click();
             }
+        }
+    }, {
+        key: 'load',
+        value: function load(event) {
+            var _this2 = this;
+
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var json = JSON.parse(e.target.result);
+                _this2.sectors = _editableMap2.default.fromJSON(json);
+            };
+            reader.readAsText(event.target.files[0]);
         }
     }, {
         key: 'drawTools',
@@ -1265,7 +1234,7 @@ var Editor = function () {
     }, {
         key: 'update',
         value: function update() {
-            var _this2 = this;
+            var _this3 = this;
 
             this.clear();
             this.drawSectors();
@@ -1273,13 +1242,13 @@ var Editor = function () {
             this.drawSelections();
 
             window.requestAnimationFrame(function () {
-                return _this2.update();
+                return _this3.update();
             });
         }
     }, {
         key: 'updateUI',
         value: function updateUI() {
-            console.log('updated ui');
+            // console.log('updated ui');
             this.ui.edit.style.display = this.selectedObject ? '' : 'none';
             this.ui.editButton.style.display = this.selectedObject ? '' : 'none';
             this.ui.editButton.innerHTML = 'Edit ' + (this.selectedObject ? this.selectedObject.toString() : '');
@@ -1313,6 +1282,208 @@ var Editor = function () {
 }();
 
 window.Editor = Editor;
+
+/***/ }),
+/* 5 */,
+/* 6 */,
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _editorObjects = __webpack_require__(1);
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var EditableMap = function () {
+    function EditableMap() {
+        _classCallCheck(this, EditableMap);
+    }
+
+    _createClass(EditableMap, null, [{
+        key: 'fromJSON',
+        value: function fromJSON(json) {
+            var sectors = [];
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = json[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var sector = _step.value;
+
+                    var linedefs = [];
+                    var _iteratorNormalCompletion2 = true;
+                    var _didIteratorError2 = false;
+                    var _iteratorError2 = undefined;
+
+                    try {
+                        for (var _iterator2 = sector.linedefs[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                            var linedef = _step2.value;
+
+                            var currentLinedef = null;
+                            var _iteratorNormalCompletion3 = true;
+                            var _didIteratorError3 = false;
+                            var _iteratorError3 = undefined;
+
+                            try {
+                                for (var _iterator3 = window.linedefs[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                                    var l = _step3.value;
+
+                                    if (l.id == linedef.id) {
+                                        currentLinedef = l;
+                                    }
+                                }
+                            } catch (err) {
+                                _didIteratorError3 = true;
+                                _iteratorError3 = err;
+                            } finally {
+                                try {
+                                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                                        _iterator3.return();
+                                    }
+                                } finally {
+                                    if (_didIteratorError3) {
+                                        throw _iteratorError3;
+                                    }
+                                }
+                            }
+
+                            if (!currentLinedef) {
+                                var startVertex = new _editorObjects.Vertex(linedef.startVertex.x, linedef.startVertex.y, linedef.startVertex.id);
+                                var endVertex = new _editorObjects.Vertex(linedef.endVertex.x, linedef.endVertex.y, linedef.endVertex.id);
+                                currentLinedef = new _editorObjects.LineDef(startVertex, endVertex, linedef.id);
+                            }
+
+                            linedefs.push(currentLinedef);
+                        }
+                    } catch (err) {
+                        _didIteratorError2 = true;
+                        _iteratorError2 = err;
+                    } finally {
+                        try {
+                            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                                _iterator2.return();
+                            }
+                        } finally {
+                            if (_didIteratorError2) {
+                                throw _iteratorError2;
+                            }
+                        }
+                    }
+
+                    var currentSector = new _editorObjects.Sector(linedefs, true, sector.id);
+                    sectors.push(currentSector);
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+
+            return sectors;
+        }
+    }, {
+        key: 'toJSON',
+        value: function toJSON(map) {
+            var json = [];
+
+            var _iteratorNormalCompletion4 = true;
+            var _didIteratorError4 = false;
+            var _iteratorError4 = undefined;
+
+            try {
+                for (var _iterator4 = map[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                    var sector = _step4.value;
+
+                    var linedefs = [];
+                    var _iteratorNormalCompletion5 = true;
+                    var _didIteratorError5 = false;
+                    var _iteratorError5 = undefined;
+
+                    try {
+                        for (var _iterator5 = sector.linedefs[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                            var linedef = _step5.value;
+
+                            var currentLinedef = {
+                                id: linedef.id,
+                                startVertex: {
+                                    id: linedef.startVertex.id,
+                                    x: linedef.startVertex.x,
+                                    y: linedef.startVertex.y
+                                },
+                                endVertex: {
+                                    id: linedef.endVertex.id,
+                                    x: linedef.endVertex.x,
+                                    y: linedef.endVertex.y
+                                },
+                                leftSidedef: linedef.leftSidedef != '' ? linedef.leftSidedef : null,
+                                rightSidedef: linedef.rightSidedef != '' ? linedef.rightSidedef : null
+                            };
+                            linedefs.push(currentLinedef);
+                        }
+                    } catch (err) {
+                        _didIteratorError5 = true;
+                        _iteratorError5 = err;
+                    } finally {
+                        try {
+                            if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                                _iterator5.return();
+                            }
+                        } finally {
+                            if (_didIteratorError5) {
+                                throw _iteratorError5;
+                            }
+                        }
+                    }
+
+                    var currentSector = {
+                        id: sector.id,
+                        linedefs: linedefs,
+                        floorHeight: sector.floorHeight,
+                        ceilingHeight: sector.ceilingHeight
+                    };
+                    json.push(currentSector);
+                }
+            } catch (err) {
+                _didIteratorError4 = true;
+                _iteratorError4 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                        _iterator4.return();
+                    }
+                } finally {
+                    if (_didIteratorError4) {
+                        throw _iteratorError4;
+                    }
+                }
+            }
+
+            return json;
+        }
+    }]);
+
+    return EditableMap;
+}();
+
+exports.default = EditableMap;
 
 /***/ })
 /******/ ]);

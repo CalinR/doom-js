@@ -2,6 +2,7 @@ import { LineDef, Vertex, Sector } from './editorObjects'
 import Modal from './modal'
 import SectorModal from './sectorModal'
 import LinedefModal from './linedefModal'
+import EditableMap from './editableMap'
 
 class Editor {
     constructor(){
@@ -334,7 +335,6 @@ class Editor {
 
     drawSectors(){
         for(let sector of this.sectors){
-            
             if(sector.closed){
                 this.context.beginPath();
                 for(let i=0; i<sector.linedefs.length; i++){
@@ -386,44 +386,8 @@ class Editor {
         }
     }
 
-    generateJSON(){
-        let json = [];
-        
-        for(let sector of this.sectors){
-            let linedefs = [];
-            for(let linedef of sector.linedefs){
-                let currentLinedef = {
-                    id: linedef.id,
-                    startVertex: {
-                        id: linedef.startVertex.id,
-                        x: linedef.startVertex.x,
-                        y: linedef.startVertex.y   
-                    },
-                    endVertex: {
-                        id: linedef.endVertex.id,
-                        x: linedef.endVertex.x,
-                        y: linedef.endVertex.y
-                    },
-                    leftSidedef: linedef.leftSidedef,
-                    rightSidedef: linedef.rightSidedef
-                }
-                linedefs.push(currentLinedef)
-            }
-
-            let currentSector = {
-                id: sector.id,
-                linedefs: linedefs,
-                floorHeight: sector.floorHeight,
-                ceilingHeight: sector.ceilingHeight
-            };
-            json.push(currentSector);
-        }
-
-        return json;
-    }
-
     save(){
-        let json = this.generateJSON();
+        let json = EditableMap.toJSON(this.sectors);
         let file = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json, null, '\t'));
         let filename = prompt("Enter Filename", "level1");
         if(filename){
@@ -432,6 +396,16 @@ class Editor {
             downloadAnchor.setAttribute('download', `${filename}.json`);
             downloadAnchor.click();
         }
+    }
+
+    load(event){
+        var reader = new FileReader();
+        reader.onload = (e) => {
+            let json = JSON.parse(e.target.result);
+            this.sectors = EditableMap.fromJSON(json);
+
+        }
+        reader.readAsText(event.target.files[0]);
     }
 
     drawTools(){
@@ -504,7 +478,7 @@ class Editor {
     }
 
     updateUI(){
-        console.log('updated ui');
+        // console.log('updated ui');
         this.ui.edit.style.display = this.selectedObject ? '' : 'none';
         this.ui.editButton.style.display = this.selectedObject ? '' : 'none';
         this.ui.editButton.innerHTML = `Edit ${this.selectedObject ? this.selectedObject.toString() : ''}`;

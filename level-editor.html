@@ -11,6 +11,9 @@
                 <button onclick="editor.save()">Save As</button>
             </li>
             <li>
+                <input type="file" onchange="editor.load(event)" id="load"/>
+            </li>
+            <li>
                 <input type="radio" name="tools" id="select" onchange="editor.changeTool('select')" /><label for="select">Select</label>
             </li>
             <li>

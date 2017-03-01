@@ -162,45 +162,46 @@ export class PerspectiveCamera extends Camera {
             let floorHeight = sector.floorHeight;
             let ceilingHeight = sector.ceilingHeight;
             for(let linedef of sector.linedefs){
+                if(linedef.leftSidedef){
+                    let point1 = this.transformVertex(linedef.vertices[0]);
+                    let point2 = this.transformVertex(linedef.vertices[1]);
+                    let color = linedef.leftSidedef;
 
-                let point1 = this.transformVertex(linedef.vertices[0]);
-                let point2 = this.transformVertex(linedef.vertices[1]);
-                let color = linedef.leftSidedef;
+                    if(point1.y > 0 || point2.y > 0){
+                        if(point1.y<0){
+                            let xDiff = point1.x - point2.x;
+                            let yDiff = point1.y - point2.y;
+                            let slope = xDiff / yDiff;
+                            let clipY = point2.y;
+                            point1.y = 1;
+                            point1.x = point2.x - point2.y * slope;
+                        }
+                        if(point2.y<0){
+                            let xDiff = point1.x - point2.x;
+                            let yDiff = point1.y - point2.y;
+                            let slope = xDiff / yDiff;
+                            point2.y = 1;
+                            point2.x = point1.x - point1.y * slope;
+                        }
 
-                if(point1.y > 0 || point2.y > 0){
-                    if(point1.y<0){
-                        let xDiff = point1.x - point2.x;
-                        let yDiff = point1.y - point2.y;
-                        let slope = xDiff / yDiff;
-                        let clipY = point2.y;
-                        point1.y = 1;
-                        point1.x = point2.x - point2.y * slope;
+                        let vertex1 = this.projectVertex(point1, floorHeight);
+                        let vertex2 = this.projectVertex(point2, floorHeight);
+                        let vertex3 = this.projectVertex(point2, ceilingHeight);
+                        let vertex4 = this.projectVertex(point1, ceilingHeight);
+
+                        this.context.beginPath();
+                        this.context.strokeStyle = '#000';
+                        this.context.fillStyle = color;
+                        this.context.moveTo(vertex1.x, vertex1.y);
+                        this.context.lineTo(vertex2.x, vertex2.y);
+                        this.context.lineTo(vertex3.x, vertex3.y);
+                        this.context.lineTo(vertex4.x, vertex4.y);
+                        this.context.lineTo(vertex1.x, vertex1.y);
+                        this.context.stroke();
+                        this.context.fill();
+                        this.context.closePath();
+
                     }
-                    if(point2.y<0){
-                        let xDiff = point1.x - point2.x;
-                        let yDiff = point1.y - point2.y;
-                        let slope = xDiff / yDiff;
-                        point2.y = 1;
-                        point2.x = point1.x - point1.y * slope;
-                    }
-
-                    let vertex1 = this.projectVertex(point1, floorHeight);
-                    let vertex2 = this.projectVertex(point2, floorHeight);
-                    let vertex3 = this.projectVertex(point2, ceilingHeight);
-                    let vertex4 = this.projectVertex(point1, ceilingHeight);
-
-                    this.context.beginPath();
-                    this.context.strokeStyle = '#000';
-                    this.context.fillStyle = color;
-                    this.context.moveTo(vertex1.x, vertex1.y);
-                    this.context.lineTo(vertex2.x, vertex2.y);
-                    this.context.lineTo(vertex3.x, vertex3.y);
-                    this.context.lineTo(vertex4.x, vertex4.y);
-                    this.context.lineTo(vertex1.x, vertex1.y);
-                    this.context.stroke();
-                    this.context.fill();
-                    this.context.closePath();
-
                 }
             }
         }

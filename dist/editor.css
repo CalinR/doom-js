@@ -177,3 +177,6 @@ input[type="color"] {
     border: none;
     height: 30px;
 }
+input[type="file"] {
+    width: 75px;
+}

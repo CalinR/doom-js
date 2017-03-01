@@ -87,6 +87,9 @@ export class Sector {
         this.closed = closed;
         this.floorHeight = 0;
         this.ceilingHeight = 10;
+        for(let linedef of linedefs){
+            linedef.parents.push(this);
+        }
         window.sectors.push(this);
     }
 
