@@ -83,6 +83,8 @@ export class Sector {
         this.id = id;
         this.linedefs = linedefs;
         this.closed = closed;
+        this.floorHeight = 0;
+        this.ceilingHeight = 10;
         window.sectors.push(this);
     }
 

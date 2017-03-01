@@ -63,7 +63,7 @@
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -73,9 +73,324 @@
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _editorObjects = __webpack_require__(1);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var vertexId = 0;
+var sectorId = 0;
+var linedefId = 0;
+
+window.sectors = [];
+window.linedefs = [];
+window.vertices = [];
+
+window.sharedLineDefs = function () {
+    var shared = [];
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+        for (var _iterator = window.linedefs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var linedef = _step.value;
+
+            if (linedef.parents.length > 1) {
+                shared.push(linedef);
+            }
+        }
+    } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+            }
+        } finally {
+            if (_didIteratorError) {
+                throw _iteratorError;
+            }
+        }
+    }
+
+    return shared;
+};
+
+var Vertex = exports.Vertex = function () {
+    function Vertex(x, y) {
+        var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : vertexId++;
+
+        _classCallCheck(this, Vertex);
+
+        this.id = id;
+        this.parents = [];
+        this.x = x;
+        this.y = y;
+        window.vertices.push(this);
+    }
+
+    _createClass(Vertex, [{
+        key: 'type',
+        value: function type() {
+            return 'vertex';
+        }
+    }, {
+        key: 'toString',
+        value: function toString() {
+            return 'Vertex';
+        }
+    }]);
+
+    return Vertex;
+}();
+
+var LineDef = exports.LineDef = function () {
+    function LineDef(startVertex, endVertex) {
+        var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : linedefId++;
+
+        _classCallCheck(this, LineDef);
+
+        this.id = id;
+        this.parents = [];
+        startVertex.parents.push(this);
+        endVertex.parents.push(this);
+        this.startVertex = startVertex;
+        this.endVertex = endVertex;
+        window.linedefs.push(this);
+    }
+
+    _createClass(LineDef, [{
+        key: 'checkMatch',
+        value: function checkMatch(match1, match2) {
+            var found_match = false;
+            if (this.startVertex.x == match1.x && this.startVertex.y == match1.y || this.endVertex.x == match1.x && this.endVertex.y == match1.y) {
+                found_match = true;
+            }
+            if (this.startVertex.x == match2.x && this.startVertex.y == match2.y || this.endVertex.x == match2.x && this.endVertex.y == match2.y) {
+                if (found_match) {
+                    if (this.startVertex.x == match1.x && this.startVertex.y == match1.y) {
+                        return this.startVertex;
+                    } else {
+                        return this.endVertex;
+                    }
+                }
+            }
+
+            return false;
+        }
+    }, {
+        key: 'type',
+        value: function type() {
+            return 'linedef';
+        }
+    }, {
+        key: 'toString',
+        value: function toString() {
+            return 'Linedef';
+        }
+    }, {
+        key: 'twoSided',
+        get: function get() {
+            return this.parents.length > 1;
+        }
+    }]);
+
+    return LineDef;
+}();
+
+var Sector = exports.Sector = function () {
+    function Sector() {
+        var linedefs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+        var closed = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+        var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : sectorId++;
+
+        _classCallCheck(this, Sector);
+
+        this.id = id;
+        this.linedefs = linedefs;
+        this.closed = closed;
+        this.floorHeight = 0;
+        this.ceilingHeight = 10;
+        window.sectors.push(this);
+    }
+
+    _createClass(Sector, [{
+        key: 'type',
+        value: function type() {
+            return 'sector';
+        }
+    }, {
+        key: 'add',
+        value: function add(linedef) {
+            linedef.parents.push(this);
+            this.linedefs.push(linedef);
+        }
+    }, {
+        key: 'toString',
+        value: function toString() {
+            return 'Sector';
+        }
+    }]);
+
+    return Sector;
+}();
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var modalId = 0;
+
+var Modal = exports.Modal = function () {
+    function Modal() {
+        var title = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'Heading';
+        var templateInner = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '<h2>Content</h2>';
+
+        _classCallCheck(this, Modal);
+
+        this.id = modalId++;
+        this.title = title;
+        this._templateInner = templateInner;
+        this._template = '<div class="modal-container">\n            <div class="modal-background"></div>\n            <div class="modal">\n                <div class="modal-header">' + this.title + '</div>\n                <div class="modal-body">' + this.templateInner + '</div>\n                <div class="modal-footer"><button class="modal-cancel btn">Cancel</button><button class="modal-okay btn">Okay</button></div>\n            </div>\n        </div>';
+        this._visible = false;
+        this.domElement = document.createElement('div');
+        this.domElement.setAttribute('id', 'modal-' + this.id);
+        document.body.appendChild(this.domElement);
+        this.html = null;
+        this.generateHTML();
+        this.render();
+    }
+
+    _createClass(Modal, [{
+        key: 'closeModal',
+        value: function closeModal() {
+            this.visible = false;
+        }
+    }, {
+        key: 'generateHTML',
+        value: function generateHTML() {
+            this.domElement.innerHTML = '<div class="modal-container">\n            <div class="modal-background"></div>\n            <div class="modal">\n                <div class="modal-header">' + this.title + '</div>\n                <div class="modal-body">' + this.templateInner + '</div>\n                <div class="modal-footer"><button class="modal-cancel btn">Cancel</button><button class="modal-okay btn">Okay</button></div>\n            </div>\n        </div>';
+            this.bindActions();
+        }
+    }, {
+        key: 'bindActions',
+        value: function bindActions() {
+            var _this = this;
+
+            this.domElement.getElementsByClassName('modal-cancel')[0].onclick = function (event) {
+                _this.visible = false;
+            };
+            this.domElement.getElementsByClassName('modal-okay')[0].onclick = function (event) {
+                _this.save();
+            };
+        }
+    }, {
+        key: 'save',
+        value: function save() {
+            this.visible = false;
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            this.domElement.style.display = this.visible ? '' : 'none';
+        }
+    }, {
+        key: 'visible',
+        set: function set(value) {
+            this._visible = value;
+            this.render();
+        },
+        get: function get() {
+            return this._visible;
+        }
+    }, {
+        key: 'templateInner',
+        set: function set(value) {
+            this._templateInner = value;
+            this.generateHTML();
+        },
+        get: function get() {
+            return this._templateInner;
+        }
+    }, {
+        key: 'template',
+        set: function set(value) {
+            this._template = value;
+            this.generateHTML();
+        },
+        get: function get() {
+            return this._template;
+        }
+    }]);
+
+    return Modal;
+}();
+
+var SectorModal = exports.SectorModal = function (_Modal) {
+    _inherits(SectorModal, _Modal);
+
+    function SectorModal() {
+        _classCallCheck(this, SectorModal);
+
+        var _this2 = _possibleConstructorReturn(this, (SectorModal.__proto__ || Object.getPrototypeOf(SectorModal)).call(this, 'Edit Sector'));
+
+        _this2.sector = null;
+        return _this2;
+    }
+
+    _createClass(SectorModal, [{
+        key: 'changeSector',
+        value: function changeSector(sector) {
+            this.sector = sector;
+            this.templateInner = '<div class="input-row">\n            <label for="floor">Floor Height</label>\n            <input type="text" name="floor_height" class="floor-height" id="floor" value="' + this.sector.floorHeight + '" />\n        </div>\n        <div class="input-row">\n            <label for="ceiling">Ceiling Height</label>\n            <input type="text" name="ceiling_height" class="ceiling-height" id="ceiling" value="' + this.sector.ceilingHeight + '" />\n        </div>';
+            this.visible = true;
+        }
+    }, {
+        key: 'save',
+        value: function save() {
+            this.sector.floorHeight = this.domElement.getElementsByClassName('floor-height')[0].value;
+            this.sector.ceilingHeight = this.domElement.getElementsByClassName('ceiling-height')[0].value;
+            _get(SectorModal.prototype.__proto__ || Object.getPrototypeOf(SectorModal.prototype), 'save', this).call(this);
+        }
+    }]);
+
+    return SectorModal;
+}(Modal);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _editorObjects = __webpack_require__(0);
+
+var _modal = __webpack_require__(1);
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -89,6 +404,7 @@ var Editor = function () {
         this.context = this.canvas.getContext('2d');
         this.hitCanvas = document.createElement('canvas');
         this.hitContext = this.hitCanvas.getContext('2d');
+        this.sectorModal = new _modal.SectorModal();
         this.grid.width = '2000';
         this.grid.height = '2000';
         this.canvas.width = '2000';
@@ -721,6 +1037,10 @@ var Editor = function () {
         key: 'edit',
         value: function edit() {
             var editType = this.selectedObject ? this.selectedObject.type() : null;
+            if (editType == 'sector') {
+                this.sectorModal.changeSector(this.selectedObject);
+                // this.sectorModal.visible = true;
+            }
 
             console.log(editType);
         }
@@ -818,178 +1138,6 @@ var Editor = function () {
 }();
 
 window.Editor = Editor;
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var vertexId = 0;
-var sectorId = 0;
-var linedefId = 0;
-
-window.sectors = [];
-window.linedefs = [];
-window.vertices = [];
-
-window.sharedLineDefs = function () {
-    var shared = [];
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
-
-    try {
-        for (var _iterator = window.linedefs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var linedef = _step.value;
-
-            if (linedef.parents.length > 1) {
-                shared.push(linedef);
-            }
-        }
-    } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-    } finally {
-        try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-                _iterator.return();
-            }
-        } finally {
-            if (_didIteratorError) {
-                throw _iteratorError;
-            }
-        }
-    }
-
-    return shared;
-};
-
-var Vertex = exports.Vertex = function () {
-    function Vertex(x, y) {
-        var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : vertexId++;
-
-        _classCallCheck(this, Vertex);
-
-        this.id = id;
-        this.parents = [];
-        this.x = x;
-        this.y = y;
-        window.vertices.push(this);
-    }
-
-    _createClass(Vertex, [{
-        key: 'type',
-        value: function type() {
-            return 'vertex';
-        }
-    }, {
-        key: 'toString',
-        value: function toString() {
-            return 'Vertex';
-        }
-    }]);
-
-    return Vertex;
-}();
-
-var LineDef = exports.LineDef = function () {
-    function LineDef(startVertex, endVertex) {
-        var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : linedefId++;
-
-        _classCallCheck(this, LineDef);
-
-        this.id = id;
-        this.parents = [];
-        startVertex.parents.push(this);
-        endVertex.parents.push(this);
-        this.startVertex = startVertex;
-        this.endVertex = endVertex;
-        window.linedefs.push(this);
-    }
-
-    _createClass(LineDef, [{
-        key: 'checkMatch',
-        value: function checkMatch(match1, match2) {
-            var found_match = false;
-            if (this.startVertex.x == match1.x && this.startVertex.y == match1.y || this.endVertex.x == match1.x && this.endVertex.y == match1.y) {
-                found_match = true;
-            }
-            if (this.startVertex.x == match2.x && this.startVertex.y == match2.y || this.endVertex.x == match2.x && this.endVertex.y == match2.y) {
-                if (found_match) {
-                    if (this.startVertex.x == match1.x && this.startVertex.y == match1.y) {
-                        return this.startVertex;
-                    } else {
-                        return this.endVertex;
-                    }
-                }
-            }
-
-            return false;
-        }
-    }, {
-        key: 'type',
-        value: function type() {
-            return 'linedef';
-        }
-    }, {
-        key: 'toString',
-        value: function toString() {
-            return 'Linedef';
-        }
-    }, {
-        key: 'twoSided',
-        get: function get() {
-            return this.parents.length > 1;
-        }
-    }]);
-
-    return LineDef;
-}();
-
-var Sector = exports.Sector = function () {
-    function Sector() {
-        var linedefs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-        var closed = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-        var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : sectorId++;
-
-        _classCallCheck(this, Sector);
-
-        this.id = id;
-        this.linedefs = linedefs;
-        this.closed = closed;
-        window.sectors.push(this);
-    }
-
-    _createClass(Sector, [{
-        key: 'type',
-        value: function type() {
-            return 'sector';
-        }
-    }, {
-        key: 'add',
-        value: function add(linedef) {
-            linedef.parents.push(this);
-            this.linedefs.push(linedef);
-        }
-    }, {
-        key: 'toString',
-        value: function toString() {
-            return 'Sector';
-        }
-    }]);
-
-    return Sector;
-}();
 
 /***/ })
 /******/ ]);

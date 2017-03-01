@@ -1,4 +1,5 @@
 import { LineDef, Vertex, Sector } from './editorObjects'
+import {Modal, SectorModal} from './modal'
 
 class Editor {
     constructor(){
@@ -8,6 +9,7 @@ class Editor {
         this.context = this.canvas.getContext('2d');
         this.hitCanvas = document.createElement('canvas');
         this.hitContext = this.hitCanvas.getContext('2d'); 
+        this.sectorModal = new SectorModal();
         this.grid.width = '2000';
         this.grid.height = '2000';
         this.canvas.width = '2000';
@@ -405,6 +407,10 @@ class Editor {
 
     edit(){
         let editType = this.selectedObject ? this.selectedObject.type() : null;
+        if(editType == 'sector'){
+            this.sectorModal.changeSector(this.selectedObject);
+            // this.sectorModal.visible = true;
+        }
 
         console.log(editType);
     }
