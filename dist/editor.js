@@ -63,11 +63,115 @@
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var modalId = 0;
+
+var Modal = function () {
+    function Modal() {
+        var title = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'Heading';
+        var templateInner = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '<h2>Content</h2>';
+
+        _classCallCheck(this, Modal);
+
+        this.id = modalId++;
+        this.title = title;
+        this._templateInner = templateInner;
+        this._template = '<div class="modal-container">\n            <div class="modal-background"></div>\n            <div class="modal">\n                <div class="modal-header">' + this.title + '</div>\n                <div class="modal-body">' + this.templateInner + '</div>\n                <div class="modal-footer"><button class="modal-cancel btn">Cancel</button><button class="modal-okay btn">Okay</button></div>\n            </div>\n        </div>';
+        this._visible = false;
+        this.domElement = document.createElement('div');
+        this.domElement.setAttribute('id', 'modal-' + this.id);
+        document.body.appendChild(this.domElement);
+        this.html = null;
+        this.generateHTML();
+        this.render();
+    }
+
+    _createClass(Modal, [{
+        key: 'closeModal',
+        value: function closeModal() {
+            this.visible = false;
+        }
+    }, {
+        key: 'generateHTML',
+        value: function generateHTML() {
+            this.domElement.innerHTML = '<div class="modal-container">\n            <div class="modal-background"></div>\n            <div class="modal">\n                <div class="modal-header">' + this.title + '</div>\n                <div class="modal-body">' + this.templateInner + '</div>\n                <div class="modal-footer"><button class="modal-cancel btn">Cancel</button><button class="modal-okay btn">Okay</button></div>\n            </div>\n        </div>';
+            this.bindActions();
+        }
+    }, {
+        key: 'bindActions',
+        value: function bindActions() {
+            var _this = this;
+
+            this.domElement.getElementsByClassName('modal-cancel')[0].onclick = function (event) {
+                _this.visible = false;
+            };
+            this.domElement.getElementsByClassName('modal-okay')[0].onclick = function (event) {
+                _this.save();
+            };
+        }
+    }, {
+        key: 'save',
+        value: function save() {
+            this.visible = false;
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            this.domElement.style.display = this.visible ? '' : 'none';
+        }
+    }, {
+        key: 'visible',
+        set: function set(value) {
+            this._visible = value;
+            this.render();
+        },
+        get: function get() {
+            return this._visible;
+        }
+    }, {
+        key: 'templateInner',
+        set: function set(value) {
+            this._templateInner = value;
+            this.generateHTML();
+        },
+        get: function get() {
+            return this._templateInner;
+        }
+    }, {
+        key: 'template',
+        set: function set(value) {
+            this._template = value;
+            this.generateHTML();
+        },
+        get: function get() {
+            return this._template;
+        }
+    }]);
+
+    return Modal;
+}();
+
+exports.default = Modal;
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -243,7 +347,7 @@ var Sector = exports.Sector = function () {
 }();
 
 /***/ }),
-/* 1 */
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -255,99 +359,115 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _modal = __webpack_require__(0);
+
+var _modal2 = _interopRequireDefault(_modal);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var modalId = 0;
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-var Modal = function () {
-    function Modal() {
-        var title = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'Heading';
-        var templateInner = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '<h2>Content</h2>';
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-        _classCallCheck(this, Modal);
+var LinedefModal = function (_Modal) {
+    _inherits(LinedefModal, _Modal);
 
-        this.id = modalId++;
-        this.title = title;
-        this._templateInner = templateInner;
-        this._template = '<div class="modal-container">\n            <div class="modal-background"></div>\n            <div class="modal">\n                <div class="modal-header">' + this.title + '</div>\n                <div class="modal-body">' + this.templateInner + '</div>\n                <div class="modal-footer"><button class="modal-cancel btn">Cancel</button><button class="modal-okay btn">Okay</button></div>\n            </div>\n        </div>';
-        this._visible = false;
-        this.domElement = document.createElement('div');
-        this.domElement.setAttribute('id', 'modal-' + this.id);
-        document.body.appendChild(this.domElement);
-        this.html = null;
-        this.generateHTML();
-        this.render();
+    function LinedefModal() {
+        _classCallCheck(this, LinedefModal);
+
+        var _this = _possibleConstructorReturn(this, (LinedefModal.__proto__ || Object.getPrototypeOf(LinedefModal)).call(this, 'Edit Linedef'));
+
+        _this.linedef = null;
+        return _this;
     }
 
-    _createClass(Modal, [{
-        key: 'closeModal',
-        value: function closeModal() {
-            this.visible = false;
-        }
-    }, {
-        key: 'generateHTML',
-        value: function generateHTML() {
-            this.domElement.innerHTML = '<div class="modal-container">\n            <div class="modal-background"></div>\n            <div class="modal">\n                <div class="modal-header">' + this.title + '</div>\n                <div class="modal-body">' + this.templateInner + '</div>\n                <div class="modal-footer"><button class="modal-cancel btn">Cancel</button><button class="modal-okay btn">Okay</button></div>\n            </div>\n        </div>';
-            this.bindActions();
-        }
-    }, {
-        key: 'bindActions',
-        value: function bindActions() {
-            var _this = this;
-
-            this.domElement.getElementsByClassName('modal-cancel')[0].onclick = function (event) {
-                _this.visible = false;
-            };
-            this.domElement.getElementsByClassName('modal-okay')[0].onclick = function (event) {
-                _this.save();
-            };
+    _createClass(LinedefModal, [{
+        key: 'changeLinedef',
+        value: function changeLinedef(linedef) {
+            this.linedef = linedef;
+            this.templateInner = '<div class="input-row">\n            <label for="left_sidedef">Left Sidedef</label>\n            <input type="color" name="left_sidedef" class="left-sidedef" id="left_sidedef" value="' + this.linedef.leftSidedef + '" />\n        </div>\n        <div class="input-row">\n            <label for="right_sidedef">Right Sidedef</label>\n            <input type="color" name="right_sidedef" class="right-sidedef" id="right_sidedef" value="' + this.linedef.rightSidedef + '" />\n        </div>';
+            this.visible = true;
         }
     }, {
         key: 'save',
         value: function save() {
-            this.visible = false;
-        }
-    }, {
-        key: 'render',
-        value: function render() {
-            this.domElement.style.display = this.visible ? '' : 'none';
-        }
-    }, {
-        key: 'visible',
-        set: function set(value) {
-            this._visible = value;
-            this.render();
-        },
-        get: function get() {
-            return this._visible;
-        }
-    }, {
-        key: 'templateInner',
-        set: function set(value) {
-            this._templateInner = value;
-            this.generateHTML();
-        },
-        get: function get() {
-            return this._templateInner;
-        }
-    }, {
-        key: 'template',
-        set: function set(value) {
-            this._template = value;
-            this.generateHTML();
-        },
-        get: function get() {
-            return this._template;
+            this.linedef.leftSidedef = this.domElement.getElementsByClassName('left-sidedef')[0].value;
+            this.linedef.rightSidedef = this.domElement.getElementsByClassName('right-sidedef')[0].value;
+            _get(LinedefModal.prototype.__proto__ || Object.getPrototypeOf(LinedefModal.prototype), 'save', this).call(this);
         }
     }]);
 
-    return Modal;
-}();
+    return LinedefModal;
+}(_modal2.default);
 
-exports.default = Modal;
+exports.default = LinedefModal;
 
 /***/ }),
-/* 2 */
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _modal = __webpack_require__(0);
+
+var _modal2 = _interopRequireDefault(_modal);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var SectorModal = function (_Modal) {
+    _inherits(SectorModal, _Modal);
+
+    function SectorModal() {
+        _classCallCheck(this, SectorModal);
+
+        var _this = _possibleConstructorReturn(this, (SectorModal.__proto__ || Object.getPrototypeOf(SectorModal)).call(this, 'Edit Sector'));
+
+        _this.sector = null;
+        return _this;
+    }
+
+    _createClass(SectorModal, [{
+        key: 'changeSector',
+        value: function changeSector(sector) {
+            this.sector = sector;
+            this.templateInner = '<div class="input-row">\n            <label for="floor">Floor Height</label>\n            <input type="text" name="floor_height" class="floor-height" id="floor" value="' + this.sector.floorHeight + '" />\n        </div>\n        <div class="input-row">\n            <label for="ceiling">Ceiling Height</label>\n            <input type="text" name="ceiling_height" class="ceiling-height" id="ceiling" value="' + this.sector.ceilingHeight + '" />\n        </div>';
+            this.visible = true;
+        }
+    }, {
+        key: 'save',
+        value: function save() {
+            this.sector.floorHeight = this.domElement.getElementsByClassName('floor-height')[0].value;
+            this.sector.ceilingHeight = this.domElement.getElementsByClassName('ceiling-height')[0].value;
+            _get(SectorModal.prototype.__proto__ || Object.getPrototypeOf(SectorModal.prototype), 'save', this).call(this);
+        }
+    }]);
+
+    return SectorModal;
+}(_modal2.default);
+
+exports.default = SectorModal;
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -355,9 +475,9 @@ exports.default = Modal;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _editorObjects = __webpack_require__(0);
+var _editorObjects = __webpack_require__(1);
 
-var _modal = __webpack_require__(1);
+var _modal = __webpack_require__(0);
 
 var _modal2 = _interopRequireDefault(_modal);
 
@@ -365,7 +485,7 @@ var _sectorModal = __webpack_require__(3);
 
 var _sectorModal2 = _interopRequireDefault(_sectorModal);
 
-var _linedefModal = __webpack_require__(4);
+var _linedefModal = __webpack_require__(2);
 
 var _linedefModal2 = _interopRequireDefault(_linedefModal);
 
@@ -1193,126 +1313,6 @@ var Editor = function () {
 }();
 
 window.Editor = Editor;
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-var _modal = __webpack_require__(1);
-
-var _modal2 = _interopRequireDefault(_modal);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var SectorModal = function (_Modal) {
-    _inherits(SectorModal, _Modal);
-
-    function SectorModal() {
-        _classCallCheck(this, SectorModal);
-
-        var _this = _possibleConstructorReturn(this, (SectorModal.__proto__ || Object.getPrototypeOf(SectorModal)).call(this, 'Edit Sector'));
-
-        _this.sector = null;
-        return _this;
-    }
-
-    _createClass(SectorModal, [{
-        key: 'changeSector',
-        value: function changeSector(sector) {
-            this.sector = sector;
-            this.templateInner = '<div class="input-row">\n            <label for="floor">Floor Height</label>\n            <input type="text" name="floor_height" class="floor-height" id="floor" value="' + this.sector.floorHeight + '" />\n        </div>\n        <div class="input-row">\n            <label for="ceiling">Ceiling Height</label>\n            <input type="text" name="ceiling_height" class="ceiling-height" id="ceiling" value="' + this.sector.ceilingHeight + '" />\n        </div>';
-            this.visible = true;
-        }
-    }, {
-        key: 'save',
-        value: function save() {
-            this.sector.floorHeight = this.domElement.getElementsByClassName('floor-height')[0].value;
-            this.sector.ceilingHeight = this.domElement.getElementsByClassName('ceiling-height')[0].value;
-            _get(SectorModal.prototype.__proto__ || Object.getPrototypeOf(SectorModal.prototype), 'save', this).call(this);
-        }
-    }]);
-
-    return SectorModal;
-}(_modal2.default);
-
-exports.default = SectorModal;
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-var _modal = __webpack_require__(1);
-
-var _modal2 = _interopRequireDefault(_modal);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var LinedefModal = function (_Modal) {
-    _inherits(LinedefModal, _Modal);
-
-    function LinedefModal() {
-        _classCallCheck(this, LinedefModal);
-
-        var _this = _possibleConstructorReturn(this, (LinedefModal.__proto__ || Object.getPrototypeOf(LinedefModal)).call(this, 'Edit Linedef'));
-
-        _this.linedef = null;
-        return _this;
-    }
-
-    _createClass(LinedefModal, [{
-        key: 'changeLinedef',
-        value: function changeLinedef(linedef) {
-            this.linedef = linedef;
-            this.templateInner = '<div class="input-row">\n            <label for="left_sidedef">Left Sidedef</label>\n            <input type="color" name="left_sidedef" class="left-sidedef" id="left_sidedef" value="' + this.linedef.leftSidedef + '" />\n        </div>\n        <div class="input-row">\n            <label for="right_sidedef">Right Sidedef</label>\n            <input type="color" name="right_sidedef" class="right-sidedef" id="right_sidedef" value="' + this.linedef.rightSidedef + '" />\n        </div>';
-            this.visible = true;
-        }
-    }, {
-        key: 'save',
-        value: function save() {
-            this.linedef.leftSidedef = this.domElement.getElementsByClassName('left-sidedef')[0].value;
-            this.linedef.rightSidedef = this.domElement.getElementsByClassName('right-sidedef')[0].value;
-            _get(LinedefModal.prototype.__proto__ || Object.getPrototypeOf(LinedefModal.prototype), 'save', this).call(this);
-        }
-    }]);
-
-    return LinedefModal;
-}(_modal2.default);
-
-exports.default = LinedefModal;
 
 /***/ })
 /******/ ]);

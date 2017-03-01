@@ -1,0 +1,129 @@
+[
+	{
+		"id": 0,
+		"linedefs": [
+			{
+				"id": 0,
+				"startVertex": {
+					"id": 0,
+					"x": 32,
+					"y": 64
+				},
+				"endVertex": {
+					"id": 1,
+					"x": 32,
+					"y": 128
+				},
+				"leftSidedef": "#cccccc",
+				"rightSidedef": "#cccccc"
+			},
+			{
+				"id": 1,
+				"startVertex": {
+					"id": 1,
+					"x": 32,
+					"y": 128
+				},
+				"endVertex": {
+					"id": 2,
+					"x": 80,
+					"y": 176
+				},
+				"leftSidedef": "#800080",
+				"rightSidedef": "#cccccc"
+			},
+			{
+				"id": 2,
+				"startVertex": {
+					"id": 2,
+					"x": 80,
+					"y": 176
+				},
+				"endVertex": {
+					"id": 3,
+					"x": 144,
+					"y": 176
+				},
+				"leftSidedef": "#cccccc",
+				"rightSidedef": "#cccccc"
+			},
+			{
+				"id": 3,
+				"startVertex": {
+					"id": 3,
+					"x": 144,
+					"y": 176
+				},
+				"endVertex": {
+					"id": 4,
+					"x": 192,
+					"y": 128
+				},
+				"leftSidedef": "#00ffff",
+				"rightSidedef": "#cccccc"
+			},
+			{
+				"id": 4,
+				"startVertex": {
+					"id": 4,
+					"x": 192,
+					"y": 128
+				},
+				"endVertex": {
+					"id": 5,
+					"x": 192,
+					"y": 64
+				},
+				"leftSidedef": "#cccccc",
+				"rightSidedef": "#cccccc"
+			},
+			{
+				"id": 5,
+				"startVertex": {
+					"id": 5,
+					"x": 192,
+					"y": 64
+				},
+				"endVertex": {
+					"id": 6,
+					"x": 144,
+					"y": 16
+				},
+				"leftSidedef": "#ff8000",
+				"rightSidedef": "#cccccc"
+			},
+			{
+				"id": 6,
+				"startVertex": {
+					"id": 6,
+					"x": 144,
+					"y": 16
+				},
+				"endVertex": {
+					"id": 7,
+					"x": 80,
+					"y": 16
+				},
+				"leftSidedef": "#cccccc",
+				"rightSidedef": "#cccccc"
+			},
+			{
+				"id": 7,
+				"startVertex": {
+					"id": 7,
+					"x": 80,
+					"y": 16
+				},
+				"endVertex": {
+					"id": 0,
+					"x": 32,
+					"y": 64
+				},
+				"leftSidedef": "#ff00ff",
+				"rightSidedef": "#cccccc"
+			}
+		],
+		"floorHeight": "0",
+		"ceilingHeight": "20"
+	}
+]

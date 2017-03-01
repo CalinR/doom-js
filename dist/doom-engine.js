@@ -384,6 +384,7 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
 
                             var point1 = this.transformVertex(linedef.vertices[0]);
                             var point2 = this.transformVertex(linedef.vertices[1]);
+                            var color = linedef.leftSidedef;
 
                             if (point1.y > 0 || point2.y > 0) {
                                 if (point1.y < 0) {
@@ -409,12 +410,14 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
 
                                 this.context.beginPath();
                                 this.context.strokeStyle = '#000';
+                                this.context.fillStyle = color;
                                 this.context.moveTo(vertex1.x, vertex1.y);
                                 this.context.lineTo(vertex2.x, vertex2.y);
                                 this.context.lineTo(vertex3.x, vertex3.y);
                                 this.context.lineTo(vertex4.x, vertex4.y);
                                 this.context.lineTo(vertex1.x, vertex1.y);
                                 this.context.stroke();
+                                this.context.fill();
                                 this.context.closePath();
                             }
                         }
@@ -471,11 +474,100 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.map1 = undefined;
 
-var _objects = __webpack_require__(5);
+var _objects = __webpack_require__(7);
 
-var map1 = exports.map1 = [new _objects.Sector([new _objects.LineDef([new _objects.Vertex(20, 110), new _objects.Vertex(70, 110)]), new _objects.LineDef([new _objects.Vertex(70, 110), new _objects.Vertex(70, 190)])], 0, 20)];
+var GenerateMap = function GenerateMap(map) {
+    var sectors = [];
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+        for (var _iterator = map[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var sector = _step.value;
+
+            var linedefs = [];
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+                for (var _iterator2 = sector.linedefs[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var linedef = _step2.value;
+
+                    var currentLinedef = null;
+                    var _iteratorNormalCompletion3 = true;
+                    var _didIteratorError3 = false;
+                    var _iteratorError3 = undefined;
+
+                    try {
+                        for (var _iterator3 = window.linedefs[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                            var l = _step3.value;
+
+                            if (l.id == linedef.id) {
+                                currentLinedef = l;
+                            }
+                        }
+                    } catch (err) {
+                        _didIteratorError3 = true;
+                        _iteratorError3 = err;
+                    } finally {
+                        try {
+                            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                                _iterator3.return();
+                            }
+                        } finally {
+                            if (_didIteratorError3) {
+                                throw _iteratorError3;
+                            }
+                        }
+                    }
+
+                    if (!currentLinedef) {
+                        var startVertex = new _objects.Vertex(linedef.startVertex.x, linedef.startVertex.y, linedef.startVertex.id);
+                        var endVertex = new _objects.Vertex(linedef.endVertex.x, linedef.endVertex.y, linedef.endVertex.id);
+                        currentLinedef = new _objects.LineDef([startVertex, endVertex], linedef.leftSidedef, linedef.rightSidedef, linedef.id);
+                    }
+                    linedefs.push(currentLinedef);
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                        _iterator2.return();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
+            }
+
+            var currentSector = new _objects.Sector(linedefs, sector.floorHeight, sector.ceilingHeight, sector.id);
+            sectors.push(currentSector);
+        }
+    } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion && _iterator.return) {
+                _iterator.return();
+            }
+        } finally {
+            if (_didIteratorError) {
+                throw _iteratorError;
+            }
+        }
+    }
+
+    return sectors;
+};
+
+exports.default = GenerateMap;
 
 /***/ }),
 /* 2 */
@@ -490,11 +582,11 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _gameObject = __webpack_require__(3);
+var _gameObject = __webpack_require__(4);
 
 var _gameObject2 = _interopRequireDefault(_gameObject);
 
-var _keys = __webpack_require__(4);
+var _keys = __webpack_require__(5);
 
 var _keys2 = _interopRequireDefault(_keys);
 
@@ -532,6 +624,7 @@ var Player = function (_GameObject) {
             var _this2 = this;
 
             document.onkeydown = function (e) {
+                e.preventDefault();
                 var key = e.keyCode ? e.keyCode : e.which;
 
                 switch (key) {
@@ -555,6 +648,7 @@ var Player = function (_GameObject) {
             };
 
             document.onkeyup = function (e) {
+                e.preventDefault();
                 var key = e.keyCode ? e.keyCode : e.which;
 
                 switch (key) {
@@ -608,6 +702,140 @@ exports.default = Player;
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+module.exports = [
+	{
+		"id": 0,
+		"linedefs": [
+			{
+				"id": 0,
+				"startVertex": {
+					"id": 0,
+					"x": 32,
+					"y": 64
+				},
+				"endVertex": {
+					"id": 1,
+					"x": 32,
+					"y": 128
+				},
+				"leftSidedef": "#cccccc",
+				"rightSidedef": "#cccccc"
+			},
+			{
+				"id": 1,
+				"startVertex": {
+					"id": 1,
+					"x": 32,
+					"y": 128
+				},
+				"endVertex": {
+					"id": 2,
+					"x": 80,
+					"y": 176
+				},
+				"leftSidedef": "#800080",
+				"rightSidedef": "#cccccc"
+			},
+			{
+				"id": 2,
+				"startVertex": {
+					"id": 2,
+					"x": 80,
+					"y": 176
+				},
+				"endVertex": {
+					"id": 3,
+					"x": 144,
+					"y": 176
+				},
+				"leftSidedef": "#cccccc",
+				"rightSidedef": "#cccccc"
+			},
+			{
+				"id": 3,
+				"startVertex": {
+					"id": 3,
+					"x": 144,
+					"y": 176
+				},
+				"endVertex": {
+					"id": 4,
+					"x": 192,
+					"y": 128
+				},
+				"leftSidedef": "#00ffff",
+				"rightSidedef": "#cccccc"
+			},
+			{
+				"id": 4,
+				"startVertex": {
+					"id": 4,
+					"x": 192,
+					"y": 128
+				},
+				"endVertex": {
+					"id": 5,
+					"x": 192,
+					"y": 64
+				},
+				"leftSidedef": "#cccccc",
+				"rightSidedef": "#cccccc"
+			},
+			{
+				"id": 5,
+				"startVertex": {
+					"id": 5,
+					"x": 192,
+					"y": 64
+				},
+				"endVertex": {
+					"id": 6,
+					"x": 144,
+					"y": 16
+				},
+				"leftSidedef": "#ff8000",
+				"rightSidedef": "#cccccc"
+			},
+			{
+				"id": 6,
+				"startVertex": {
+					"id": 6,
+					"x": 144,
+					"y": 16
+				},
+				"endVertex": {
+					"id": 7,
+					"x": 80,
+					"y": 16
+				},
+				"leftSidedef": "#cccccc",
+				"rightSidedef": "#cccccc"
+			},
+			{
+				"id": 7,
+				"startVertex": {
+					"id": 7,
+					"x": 80,
+					"y": 16
+				},
+				"endVertex": {
+					"id": 0,
+					"x": 32,
+					"y": 64
+				},
+				"leftSidedef": "#ff00ff",
+				"rightSidedef": "#cccccc"
+			}
+		],
+		"floorHeight": "0",
+		"ceilingHeight": "20"
+	}
+];
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -665,7 +893,7 @@ var GameObject = function () {
 exports.default = GameObject;
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -684,56 +912,6 @@ var keys = {
 exports.default = keys;
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var sectorId = 0;
-var lineDefId = 0;
-var vertexId = 0;
-var vertex3Id = 0;
-
-var Sector = exports.Sector = function Sector(linedefs) {
-    var floorHeight = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
-    var ceilingHeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
-    var id = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : sectorId++;
-
-    _classCallCheck(this, Sector);
-
-    this.id = id;
-    this.linedefs = linedefs;
-    this.floorHeight = floorHeight;
-    this.ceilingHeight = ceilingHeight;
-};
-
-var LineDef = exports.LineDef = function LineDef(vectors) {
-    var id = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : lineDefId++;
-
-    _classCallCheck(this, LineDef);
-
-    this.id = id;
-    this.vertices = vectors;
-};
-
-var Vertex = exports.Vertex = function Vertex(x, y) {
-    var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : vertexId++;
-
-    _classCallCheck(this, Vertex);
-
-    this.id = id;
-    this.x = x;
-    this.y = y;
-};
-
-/***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -741,12 +919,20 @@ var Vertex = exports.Vertex = function Vertex(x, y) {
 
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+// import { map1 } from './map1'
+
 
 var _player = __webpack_require__(2);
 
 var _player2 = _interopRequireDefault(_player);
 
-var _map = __webpack_require__(1);
+var _map = __webpack_require__(3);
+
+var _map2 = _interopRequireDefault(_map);
+
+var _generateMap = __webpack_require__(1);
+
+var _generateMap2 = _interopRequireDefault(_generateMap);
 
 var _camera = __webpack_require__(0);
 
@@ -764,7 +950,8 @@ var Main = function () {
         this.followCamera = new _camera.FollowCamera(300, 300);
         this.perspectiveCamera = new _camera.PerspectiveCamera(600, 600, 0, 0, 0);
         this.player = new _player2.default(0, 200, -45);
-        this.map = _map.map1;
+        this.map = (0, _generateMap2.default)(_map2.default);
+        console.log(this.map);
         this.gameLoop();
     }
 
@@ -820,6 +1007,67 @@ var Main = function () {
 }();
 
 new Main();
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var sectorId = 0;
+var lineDefId = 0;
+var vertexId = 0;
+var vertex3Id = 0;
+
+window.sectors = [];
+window.linedefs = [];
+window.vertices = [];
+
+var Sector = exports.Sector = function Sector(linedefs) {
+    var floorHeight = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+    var ceilingHeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
+    var id = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : sectorId++;
+
+    _classCallCheck(this, Sector);
+
+    this.id = id;
+    this.linedefs = linedefs;
+    this.floorHeight = floorHeight;
+    this.ceilingHeight = ceilingHeight;
+    window.sectors.push(this);
+};
+
+var LineDef = exports.LineDef = function LineDef(vectors) {
+    var leftSidedef = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '#ccc';
+    var rightSidedef = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '#ccc';
+    var id = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : lineDefId++;
+
+    _classCallCheck(this, LineDef);
+
+    this.id = id;
+    this.vertices = vectors;
+    this.leftSidedef = leftSidedef;
+    this.rightSidedef = rightSidedef;
+    window.linedefs.push(this);
+};
+
+var Vertex = exports.Vertex = function Vertex(x, y) {
+    var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : vertexId++;
+
+    _classCallCheck(this, Vertex);
+
+    this.id = id;
+    this.x = x;
+    this.y = y;
+    window.vertices.push(this);
+};
 
 /***/ })
 /******/ ]);

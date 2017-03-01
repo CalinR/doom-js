@@ -13,6 +13,7 @@ class Player extends GameObject {
 
     bindControls(){
         document.onkeydown = (e) => {
+            e.preventDefault();
             let key = e.keyCode ? e.keyCode : e.which;
             
             switch(key){
@@ -32,6 +33,7 @@ class Player extends GameObject {
         }
 
         document.onkeyup = (e) => {
+            e.preventDefault();
             let key = e.keyCode ? e.keyCode : e.which;
             
             switch(key){

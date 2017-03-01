@@ -165,6 +165,7 @@ export class PerspectiveCamera extends Camera {
 
                 let point1 = this.transformVertex(linedef.vertices[0]);
                 let point2 = this.transformVertex(linedef.vertices[1]);
+                let color = linedef.leftSidedef;
 
                 if(point1.y > 0 || point2.y > 0){
                     if(point1.y<0){
@@ -190,12 +191,14 @@ export class PerspectiveCamera extends Camera {
 
                     this.context.beginPath();
                     this.context.strokeStyle = '#000';
+                    this.context.fillStyle = color;
                     this.context.moveTo(vertex1.x, vertex1.y);
                     this.context.lineTo(vertex2.x, vertex2.y);
                     this.context.lineTo(vertex3.x, vertex3.y);
                     this.context.lineTo(vertex4.x, vertex4.y);
                     this.context.lineTo(vertex1.x, vertex1.y);
                     this.context.stroke();
+                    this.context.fill();
                     this.context.closePath();
 
                 }

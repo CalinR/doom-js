@@ -1,5 +1,7 @@
 import Player from './player'
-import { map1 } from './map1'
+// import { map1 } from './map1'
+import map1 from './map1.json'
+import GenerateMap from './generateMap'
 import { Camera, FollowCamera, PerspectiveCamera } from './camera'
 
 class Main {
@@ -10,7 +12,8 @@ class Main {
         this.followCamera = new FollowCamera(300, 300);
         this.perspectiveCamera = new PerspectiveCamera(600, 600, 0, 0, 0);
         this.player = new Player(0, 200, -45);
-        this.map = map1;
+        this.map = GenerateMap(map1);
+        console.log(this.map);
         this.gameLoop();
     }
 
