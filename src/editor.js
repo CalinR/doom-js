@@ -1,5 +1,7 @@
 import { LineDef, Vertex, Sector } from './editorObjects'
-import {Modal, SectorModal} from './modal'
+import Modal from './modal'
+import SectorModal from './sectorModal'
+import LinedefModal from './linedefModal'
 
 class Editor {
     constructor(){
@@ -10,6 +12,7 @@ class Editor {
         this.hitCanvas = document.createElement('canvas');
         this.hitContext = this.hitCanvas.getContext('2d'); 
         this.sectorModal = new SectorModal();
+        this.linedefModal = new LinedefModal();
         this.grid.width = '2000';
         this.grid.height = '2000';
         this.canvas.width = '2000';
@@ -383,12 +386,45 @@ class Editor {
         }
     }
 
-    save(){
-        let json = {
-            hello: 'world',
-            something: 'else'
+    generateJSON(){
+        let json = [];
+        
+        for(let sector of this.sectors){
+            let linedefs = [];
+            for(let linedef of sector.linedefs){
+                let currentLinedef = {
+                    id: linedef.id,
+                    startVertex: {
+                        id: linedef.startVertex.id,
+                        x: linedef.startVertex.x,
+                        y: linedef.startVertex.y   
+                    },
+                    endVertex: {
+                        id: linedef.endVertex.id,
+                        x: linedef.endVertex.x,
+                        y: linedef.endVertex.y
+                    },
+                    leftSidedef: linedef.leftSidedef,
+                    rightSidedef: linedef.rightSidedef
+                }
+                linedefs.push(currentLinedef)
+            }
+
+            let currentSector = {
+                id: sector.id,
+                linedefs: linedefs,
+                floorHeight: sector.floorHeight,
+                ceilingHeight: sector.ceilingHeight
+            };
+            json.push(currentSector);
         }
-        let file = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json));
+
+        return json;
+    }
+
+    save(){
+        let json = this.generateJSON();
+        let file = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json, null, '\t'));
         let filename = prompt("Enter Filename", "level1");
         if(filename){
             let downloadAnchor = document.getElementById('download');
@@ -409,10 +445,10 @@ class Editor {
         let editType = this.selectedObject ? this.selectedObject.type() : null;
         if(editType == 'sector'){
             this.sectorModal.changeSector(this.selectedObject);
-            // this.sectorModal.visible = true;
         }
-
-        console.log(editType);
+        else if(editType == 'linedef'){
+            this.linedefModal.changeLinedef(this.selectedObject);
+        }
     }
 
     drawSelections(){

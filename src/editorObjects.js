@@ -43,6 +43,8 @@ export class LineDef {
         endVertex.parents.push(this);
         this.startVertex = startVertex;
         this.endVertex = endVertex;
+        this.leftSidedef = '#cccccc';
+        this.rightSidedef = '#cccccc';
         window.linedefs.push(this);
     }
 

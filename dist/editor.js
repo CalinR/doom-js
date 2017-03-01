@@ -161,6 +161,8 @@ var LineDef = exports.LineDef = function () {
         endVertex.parents.push(this);
         this.startVertex = startVertex;
         this.endVertex = endVertex;
+        this.leftSidedef = '#cccccc';
+        this.rightSidedef = '#cccccc';
         window.linedefs.push(this);
     }
 
@@ -251,19 +253,13 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var modalId = 0;
 
-var Modal = exports.Modal = function () {
+var Modal = function () {
     function Modal() {
         var title = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'Heading';
         var templateInner = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '<h2>Content</h2>';
@@ -348,36 +344,7 @@ var Modal = exports.Modal = function () {
     return Modal;
 }();
 
-var SectorModal = exports.SectorModal = function (_Modal) {
-    _inherits(SectorModal, _Modal);
-
-    function SectorModal() {
-        _classCallCheck(this, SectorModal);
-
-        var _this2 = _possibleConstructorReturn(this, (SectorModal.__proto__ || Object.getPrototypeOf(SectorModal)).call(this, 'Edit Sector'));
-
-        _this2.sector = null;
-        return _this2;
-    }
-
-    _createClass(SectorModal, [{
-        key: 'changeSector',
-        value: function changeSector(sector) {
-            this.sector = sector;
-            this.templateInner = '<div class="input-row">\n            <label for="floor">Floor Height</label>\n            <input type="text" name="floor_height" class="floor-height" id="floor" value="' + this.sector.floorHeight + '" />\n        </div>\n        <div class="input-row">\n            <label for="ceiling">Ceiling Height</label>\n            <input type="text" name="ceiling_height" class="ceiling-height" id="ceiling" value="' + this.sector.ceilingHeight + '" />\n        </div>';
-            this.visible = true;
-        }
-    }, {
-        key: 'save',
-        value: function save() {
-            this.sector.floorHeight = this.domElement.getElementsByClassName('floor-height')[0].value;
-            this.sector.ceilingHeight = this.domElement.getElementsByClassName('ceiling-height')[0].value;
-            _get(SectorModal.prototype.__proto__ || Object.getPrototypeOf(SectorModal.prototype), 'save', this).call(this);
-        }
-    }]);
-
-    return SectorModal;
-}(Modal);
+exports.default = Modal;
 
 /***/ }),
 /* 2 */
@@ -392,6 +359,18 @@ var _editorObjects = __webpack_require__(0);
 
 var _modal = __webpack_require__(1);
 
+var _modal2 = _interopRequireDefault(_modal);
+
+var _sectorModal = __webpack_require__(3);
+
+var _sectorModal2 = _interopRequireDefault(_sectorModal);
+
+var _linedefModal = __webpack_require__(4);
+
+var _linedefModal2 = _interopRequireDefault(_linedefModal);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Editor = function () {
@@ -404,7 +383,8 @@ var Editor = function () {
         this.context = this.canvas.getContext('2d');
         this.hitCanvas = document.createElement('canvas');
         this.hitContext = this.hitCanvas.getContext('2d');
-        this.sectorModal = new _modal.SectorModal();
+        this.sectorModal = new _sectorModal2.default();
+        this.linedefModal = new _linedefModal2.default();
         this.grid.width = '2000';
         this.grid.height = '2000';
         this.canvas.width = '2000';
@@ -1010,13 +990,89 @@ var Editor = function () {
             }
         }
     }, {
+        key: 'generateJSON',
+        value: function generateJSON() {
+            var json = [];
+
+            var _iteratorNormalCompletion13 = true;
+            var _didIteratorError13 = false;
+            var _iteratorError13 = undefined;
+
+            try {
+                for (var _iterator13 = this.sectors[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
+                    var sector = _step13.value;
+
+                    var linedefs = [];
+                    var _iteratorNormalCompletion14 = true;
+                    var _didIteratorError14 = false;
+                    var _iteratorError14 = undefined;
+
+                    try {
+                        for (var _iterator14 = sector.linedefs[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
+                            var linedef = _step14.value;
+
+                            var currentLinedef = {
+                                id: linedef.id,
+                                startVertex: {
+                                    id: linedef.startVertex.id,
+                                    x: linedef.startVertex.x,
+                                    y: linedef.startVertex.y
+                                },
+                                endVertex: {
+                                    id: linedef.endVertex.id,
+                                    x: linedef.endVertex.x,
+                                    y: linedef.endVertex.y
+                                },
+                                leftSidedef: linedef.leftSidedef,
+                                rightSidedef: linedef.rightSidedef
+                            };
+                            linedefs.push(currentLinedef);
+                        }
+                    } catch (err) {
+                        _didIteratorError14 = true;
+                        _iteratorError14 = err;
+                    } finally {
+                        try {
+                            if (!_iteratorNormalCompletion14 && _iterator14.return) {
+                                _iterator14.return();
+                            }
+                        } finally {
+                            if (_didIteratorError14) {
+                                throw _iteratorError14;
+                            }
+                        }
+                    }
+
+                    var currentSector = {
+                        id: sector.id,
+                        linedefs: linedefs,
+                        floorHeight: sector.floorHeight,
+                        ceilingHeight: sector.ceilingHeight
+                    };
+                    json.push(currentSector);
+                }
+            } catch (err) {
+                _didIteratorError13 = true;
+                _iteratorError13 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion13 && _iterator13.return) {
+                        _iterator13.return();
+                    }
+                } finally {
+                    if (_didIteratorError13) {
+                        throw _iteratorError13;
+                    }
+                }
+            }
+
+            return json;
+        }
+    }, {
         key: 'save',
         value: function save() {
-            var json = {
-                hello: 'world',
-                something: 'else'
-            };
-            var file = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json));
+            var json = this.generateJSON();
+            var file = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json, null, '\t'));
             var filename = prompt("Enter Filename", "level1");
             if (filename) {
                 var downloadAnchor = document.getElementById('download');
@@ -1039,10 +1095,9 @@ var Editor = function () {
             var editType = this.selectedObject ? this.selectedObject.type() : null;
             if (editType == 'sector') {
                 this.sectorModal.changeSector(this.selectedObject);
-                // this.sectorModal.visible = true;
+            } else if (editType == 'linedef') {
+                this.linedefModal.changeLinedef(this.selectedObject);
             }
-
-            console.log(editType);
         }
     }, {
         key: 'drawSelections',
@@ -1138,6 +1193,126 @@ var Editor = function () {
 }();
 
 window.Editor = Editor;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _modal = __webpack_require__(1);
+
+var _modal2 = _interopRequireDefault(_modal);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var SectorModal = function (_Modal) {
+    _inherits(SectorModal, _Modal);
+
+    function SectorModal() {
+        _classCallCheck(this, SectorModal);
+
+        var _this = _possibleConstructorReturn(this, (SectorModal.__proto__ || Object.getPrototypeOf(SectorModal)).call(this, 'Edit Sector'));
+
+        _this.sector = null;
+        return _this;
+    }
+
+    _createClass(SectorModal, [{
+        key: 'changeSector',
+        value: function changeSector(sector) {
+            this.sector = sector;
+            this.templateInner = '<div class="input-row">\n            <label for="floor">Floor Height</label>\n            <input type="text" name="floor_height" class="floor-height" id="floor" value="' + this.sector.floorHeight + '" />\n        </div>\n        <div class="input-row">\n            <label for="ceiling">Ceiling Height</label>\n            <input type="text" name="ceiling_height" class="ceiling-height" id="ceiling" value="' + this.sector.ceilingHeight + '" />\n        </div>';
+            this.visible = true;
+        }
+    }, {
+        key: 'save',
+        value: function save() {
+            this.sector.floorHeight = this.domElement.getElementsByClassName('floor-height')[0].value;
+            this.sector.ceilingHeight = this.domElement.getElementsByClassName('ceiling-height')[0].value;
+            _get(SectorModal.prototype.__proto__ || Object.getPrototypeOf(SectorModal.prototype), 'save', this).call(this);
+        }
+    }]);
+
+    return SectorModal;
+}(_modal2.default);
+
+exports.default = SectorModal;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
+var _modal = __webpack_require__(1);
+
+var _modal2 = _interopRequireDefault(_modal);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var LinedefModal = function (_Modal) {
+    _inherits(LinedefModal, _Modal);
+
+    function LinedefModal() {
+        _classCallCheck(this, LinedefModal);
+
+        var _this = _possibleConstructorReturn(this, (LinedefModal.__proto__ || Object.getPrototypeOf(LinedefModal)).call(this, 'Edit Linedef'));
+
+        _this.linedef = null;
+        return _this;
+    }
+
+    _createClass(LinedefModal, [{
+        key: 'changeLinedef',
+        value: function changeLinedef(linedef) {
+            this.linedef = linedef;
+            this.templateInner = '<div class="input-row">\n            <label for="left_sidedef">Left Sidedef</label>\n            <input type="color" name="left_sidedef" class="left-sidedef" id="left_sidedef" value="' + this.linedef.leftSidedef + '" />\n        </div>\n        <div class="input-row">\n            <label for="right_sidedef">Right Sidedef</label>\n            <input type="color" name="right_sidedef" class="right-sidedef" id="right_sidedef" value="' + this.linedef.rightSidedef + '" />\n        </div>';
+            this.visible = true;
+        }
+    }, {
+        key: 'save',
+        value: function save() {
+            this.linedef.leftSidedef = this.domElement.getElementsByClassName('left-sidedef')[0].value;
+            this.linedef.rightSidedef = this.domElement.getElementsByClassName('right-sidedef')[0].value;
+            _get(LinedefModal.prototype.__proto__ || Object.getPrototypeOf(LinedefModal.prototype), 'save', this).call(this);
+        }
+    }]);
+
+    return LinedefModal;
+}(_modal2.default);
+
+exports.default = LinedefModal;
 
 /***/ })
 /******/ ]);
