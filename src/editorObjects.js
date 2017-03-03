@@ -1,10 +1,10 @@
-let vertexId = 0;
-let sectorId = 0;
-let linedefId = 0;
-
 window.sectors = [];
 window.linedefs = [];
 window.vertices = [];
+
+// let vertexId = window.vertices.length;
+// let sectorId = window.sectors.length;
+// let linedefId = window.linedefs.length;
 
 window.sharedLineDefs = () => {
     let shared = [];
@@ -17,8 +17,28 @@ window.sharedLineDefs = () => {
     return shared;
 }
 
+export const ClearMap = () => {
+    // vertexId = 0;
+    // sectorId = 0;
+    // linedefId = 0;
+    for(let vertex of window.vertices){
+        vertex.parents = [];
+    }
+    window.vertices = [];
+    for(let linedef of window.linedefs){
+        linedef.parents = [];
+        linedef.startVertex = null;
+        linedef.endVertex = null;
+    }
+    window.linedefs = [];
+    for(let sector of window.sectors){
+        sector.linedefs = [];
+    }
+    window.sectors = [];
+}
+
 export class Vertex {
-    constructor(x, y, id = vertexId++){
+    constructor(x, y, id = window.vertices.length){
         this.id = id;
         this.parents = [];
         this.x = x;
@@ -36,15 +56,15 @@ export class Vertex {
 }
 
 export class LineDef {
-    constructor(startVertex, endVertex, id = linedefId++){
+    constructor(startVertex, endVertex, leftSidedef = '#cccccc', rightSidedef = '#cccccc', id = window.linedefs.length){
         this.id = id;
         this.parents = [];
         startVertex.parents.push(this);
         endVertex.parents.push(this);
         this.startVertex = startVertex;
         this.endVertex = endVertex;
-        this.leftSidedef = '#cccccc';
-        this.rightSidedef = '#cccccc';
+        this.leftSidedef = leftSidedef;
+        this.rightSidedef = rightSidedef;
         window.linedefs.push(this);
     }
 
@@ -81,12 +101,12 @@ export class LineDef {
 }
 
 export class Sector {
-    constructor(linedefs = [], closed = false, id = sectorId++){
+    constructor(linedefs = [], closed = false, floorHeight = 0, ceilingHeight = 20, id = window.sectors.length){
         this.id = id;
         this.linedefs = linedefs;
         this.closed = closed;
-        this.floorHeight = 0;
-        this.ceilingHeight = 10;
+        this.floorHeight = floorHeight;
+        this.ceilingHeight = ceilingHeight;
         for(let linedef of linedefs){
             linedef.parents.push(this);
         }

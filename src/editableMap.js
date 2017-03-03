@@ -1,10 +1,14 @@
 import { Sector, LineDef, Vertex } from './editorObjects'
+import Thing from './thing'
 
 export default class EditableMap {
 
     static fromJSON(json){
-        let sectors = [];
-        for(let sector of json){
+        let object = {
+            sectors: [],
+            things: []
+        };
+        for(let sector of json.sectors){
             let linedefs = [];
             for(let linedef of sector.linedefs){
                 let currentLinedef = null;
@@ -16,20 +20,27 @@ export default class EditableMap {
                 if(!currentLinedef){
                     let startVertex = new Vertex(linedef.startVertex.x, linedef.startVertex.y, linedef.startVertex.id);
                     let endVertex = new Vertex(linedef.endVertex.x, linedef.endVertex.y, linedef.endVertex.id);
-                    currentLinedef = new LineDef(startVertex, endVertex, linedef.id);
+                    currentLinedef = new LineDef(startVertex, endVertex, linedef.leftSidedef ? linedef.leftSidedef : '', linedef.rightSidedef ? linedef.rightSidedef : '', linedef.id);
                 }
 
                 linedefs.push(currentLinedef);
             }
-            let currentSector = new Sector(linedefs, true, sector.id);
-            sectors.push(currentSector);
+            let currentSector = new Sector(linedefs, true, sector.floorHeight, sector.ceilingHeight, sector.id);
+            object.sectors.push(currentSector);
         }
 
-        return sectors;
+        for(let thing of json.things){
+            object.things.push(new Thing(thing.x, thing.y, thing.sprite, thing.type, thing.hex, thing.id));
+        }
+
+        return object;
     }
 
-    static toJSON(map){
-        let json = [];
+    static toJSON(map, things){
+        let json = {
+            sectors: [],
+            things: []
+        };
         
         for(let sector of map){
             let linedefs = [];
@@ -58,8 +69,21 @@ export default class EditableMap {
                 floorHeight: sector.floorHeight,
                 ceilingHeight: sector.ceilingHeight
             };
-            json.push(currentSector);
+            json.sectors.push(currentSector);
         }
+
+        for(let thing of things){
+            json.things.push({
+                id: thing.id,
+                x: thing.x,
+                y: thing.y,
+                sprite: thing.sprite,
+                type: thing.thingType,
+                hex: thing.hex
+            })
+        }
+
+        console.log(json);
 
         return json;
     }

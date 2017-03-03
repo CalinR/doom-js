@@ -11,10 +11,10 @@ class Main {
         this.camera = new Camera(300, 300);
         this.followCamera = new FollowCamera(300, 300);
         this.perspectiveCamera = new PerspectiveCamera(600, 600, 0, 0, 0);
-        this.player = new Player(0, 200, -45);
+        this.player = new Player(0, 200, 0);
         this.map = JsonToMap(map1);
-        console.log(this.map);
         this.gameLoop();
+        this.setupThings();
     }
 
     updateDeltaTime(){
@@ -23,9 +23,21 @@ class Main {
         window.lastUpdate = currentFrameTime;
     }
 
+    setupThings(){
+        for(let thing of this.map.things){
+            switch(thing.hex){
+                case '1':
+                    this.player.x = thing.x;
+                    this.player.y = thing.y;
+                    break;
+            }
+            console.log(thing);
+        }
+    }
+
     gameLoop(){
         this.updateDeltaTime();
-        
+
         // Draw Moving Player
         this.camera.render(this.map);
         this.camera.context.save();
@@ -58,4 +70,4 @@ class Main {
     }
 }
 
-new Main;
+window.game = new Main;

@@ -185,13 +185,13 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var vertexId = 0;
-var sectorId = 0;
-var linedefId = 0;
-
 window.sectors = [];
 window.linedefs = [];
 window.vertices = [];
+
+// let vertexId = window.vertices.length;
+// let sectorId = window.sectors.length;
+// let linedefId = window.linedefs.length;
 
 window.sharedLineDefs = function () {
     var shared = [];
@@ -225,9 +225,95 @@ window.sharedLineDefs = function () {
     return shared;
 };
 
+var ClearMap = exports.ClearMap = function ClearMap() {
+    // vertexId = 0;
+    // sectorId = 0;
+    // linedefId = 0;
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
+
+    try {
+        for (var _iterator2 = window.vertices[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var vertex = _step2.value;
+
+            vertex.parents = [];
+        }
+    } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                _iterator2.return();
+            }
+        } finally {
+            if (_didIteratorError2) {
+                throw _iteratorError2;
+            }
+        }
+    }
+
+    window.vertices = [];
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
+
+    try {
+        for (var _iterator3 = window.linedefs[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var linedef = _step3.value;
+
+            linedef.parents = [];
+            linedef.startVertex = null;
+            linedef.endVertex = null;
+        }
+    } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                _iterator3.return();
+            }
+        } finally {
+            if (_didIteratorError3) {
+                throw _iteratorError3;
+            }
+        }
+    }
+
+    window.linedefs = [];
+    var _iteratorNormalCompletion4 = true;
+    var _didIteratorError4 = false;
+    var _iteratorError4 = undefined;
+
+    try {
+        for (var _iterator4 = window.sectors[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+            var sector = _step4.value;
+
+            sector.linedefs = [];
+        }
+    } catch (err) {
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                _iterator4.return();
+            }
+        } finally {
+            if (_didIteratorError4) {
+                throw _iteratorError4;
+            }
+        }
+    }
+
+    window.sectors = [];
+};
+
 var Vertex = exports.Vertex = function () {
     function Vertex(x, y) {
-        var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : vertexId++;
+        var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : window.vertices.length;
 
         _classCallCheck(this, Vertex);
 
@@ -255,7 +341,9 @@ var Vertex = exports.Vertex = function () {
 
 var LineDef = exports.LineDef = function () {
     function LineDef(startVertex, endVertex) {
-        var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : linedefId++;
+        var leftSidedef = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '#cccccc';
+        var rightSidedef = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : '#cccccc';
+        var id = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : window.linedefs.length;
 
         _classCallCheck(this, LineDef);
 
@@ -265,8 +353,8 @@ var LineDef = exports.LineDef = function () {
         endVertex.parents.push(this);
         this.startVertex = startVertex;
         this.endVertex = endVertex;
-        this.leftSidedef = '#cccccc';
-        this.rightSidedef = '#cccccc';
+        this.leftSidedef = leftSidedef;
+        this.rightSidedef = rightSidedef;
         window.linedefs.push(this);
     }
 
@@ -313,36 +401,38 @@ var Sector = exports.Sector = function () {
     function Sector() {
         var linedefs = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
         var closed = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-        var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : sectorId++;
+        var floorHeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+        var ceilingHeight = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 20;
+        var id = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : window.sectors.length;
 
         _classCallCheck(this, Sector);
 
         this.id = id;
         this.linedefs = linedefs;
         this.closed = closed;
-        this.floorHeight = 0;
-        this.ceilingHeight = 10;
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
+        this.floorHeight = floorHeight;
+        this.ceilingHeight = ceilingHeight;
+        var _iteratorNormalCompletion5 = true;
+        var _didIteratorError5 = false;
+        var _iteratorError5 = undefined;
 
         try {
-            for (var _iterator2 = linedefs[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                var linedef = _step2.value;
+            for (var _iterator5 = linedefs[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                var linedef = _step5.value;
 
                 linedef.parents.push(this);
             }
         } catch (err) {
-            _didIteratorError2 = true;
-            _iteratorError2 = err;
+            _didIteratorError5 = true;
+            _iteratorError5 = err;
         } finally {
             try {
-                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                    _iterator2.return();
+                if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                    _iterator5.return();
                 }
             } finally {
-                if (_didIteratorError2) {
-                    throw _iteratorError2;
+                if (_didIteratorError5) {
+                    throw _iteratorError5;
                 }
             }
         }
@@ -526,6 +616,14 @@ var _editableMap = __webpack_require__(7);
 
 var _editableMap2 = _interopRequireDefault(_editableMap);
 
+var _thingSelector = __webpack_require__(8);
+
+var _thingSelector2 = _interopRequireDefault(_thingSelector);
+
+var _thing = __webpack_require__(10);
+
+var _thing2 = _interopRequireDefault(_thing);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -568,8 +666,11 @@ var Editor = function () {
         this._selectedObject = null;
         this.ui = {
             edit: document.getElementById('edit'),
-            editButton: document.getElementById('edit-button')
+            editButton: document.getElementById('edit-button'),
+            thingContainer: document.getElementById('thing-container')
         };
+        this.thingSelector = new _thingSelector2.default(document.getElementById('thing-selector'));
+        this.things = [];
 
         document.getElementsByClassName('editor-container')[0].appendChild(this.grid);
         document.getElementsByClassName('editor-container')[0].appendChild(this.canvas);
@@ -591,6 +692,8 @@ var Editor = function () {
                     _this.drawWall(event);
                 } else if (_this.tool == 'select') {
                     _this.selectObject(event);
+                } else if (_this.tool == 'thing') {
+                    _this.placeThing(event);
                 }
             };
             this.canvas.onmousedown = function (event) {
@@ -694,6 +797,10 @@ var Editor = function () {
                             _this.dragging.x = x;
                             _this.dragging.y = y;
                         }
+                        if (_this.dragging.type() == 'thing') {
+                            _this.dragging.x = x;
+                            _this.dragging.y = y;
+                        }
                     }
                 }
             };
@@ -707,77 +814,24 @@ var Editor = function () {
             var x = event.offsetX / this.gridScale;
             var y = event.offsetY / this.gridScale;
             var hitObject = null;
+            var iconSize = 16 * this.gridScale;
 
             var _iteratorNormalCompletion4 = true;
             var _didIteratorError4 = false;
             var _iteratorError4 = undefined;
 
             try {
-                for (var _iterator4 = this.sectors[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                    var sector = _step4.value;
-                    var _iteratorNormalCompletion5 = true;
-                    var _didIteratorError5 = false;
-                    var _iteratorError5 = undefined;
+                for (var _iterator4 = this.things[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                    var thing = _step4.value;
 
-                    try {
-                        for (var _iterator5 = sector.linedefs[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-                            var _linedef2 = _step5.value;
-
-                            this.hitContext.clearRect(0, 0, this.hitCanvas.width, this.hitCanvas.height);
-                            this.hitContext.beginPath();
-                            this.hitContext.strokeStyle = 'blue';
-                            this.hitContext.moveTo(_linedef2.startVertex.x * this.gridScale, _linedef2.startVertex.y * this.gridScale);
-                            this.hitContext.lineTo(_linedef2.endVertex.x * this.gridScale, _linedef2.endVertex.y * this.gridScale);
-                            this.hitContext.lineWidth = 12;
-                            this.hitContext.stroke();
-                            this.hitContext.closePath();
-                            this.hitContext.clearRect(_linedef2.startVertex.x * this.gridScale - 4, _linedef2.startVertex.y * this.gridScale - 4, 8, 8);
-                            this.hitContext.clearRect(_linedef2.endVertex.x * this.gridScale - 4, _linedef2.endVertex.y * this.gridScale - 4, 8, 8);
-                            var _hitData = this.hitContext.getImageData(x * this.gridScale, y * this.gridScale, 1, 1).data;
-                            if (_hitData[0] != 0 || _hitData[1] != 0 || _hitData[2] != 0 || _hitData[3] != 0) {
-                                hitObject = _linedef2;
-                                break;
-                            }
-                        }
-                    } catch (err) {
-                        _didIteratorError5 = true;
-                        _iteratorError5 = err;
-                    } finally {
-                        try {
-                            if (!_iteratorNormalCompletion5 && _iterator5.return) {
-                                _iterator5.return();
-                            }
-                        } finally {
-                            if (_didIteratorError5) {
-                                throw _iteratorError5;
-                            }
-                        }
-                    }
-
-                    if (!hitObject) {
-                        this.hitContext.beginPath();
-                        for (var i = 0; i < sector.linedefs.length; i++) {
-                            var linedef = sector.linedefs[i];
-
-                            if (i == 0) {
-                                this.hitContext.moveTo(linedef.startVertex.x * this.gridScale, linedef.startVertex.y * this.gridScale);
-                                this.hitContext.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
-                            } else {
-                                this.hitContext.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
-                            }
-                        }
-                        this.hitContext.fill();
-                        for (var _i = 0; _i < sector.linedefs.length; _i++) {
-                            var _linedef = sector.linedefs[_i];
-                            this.hitContext.clearRect(_linedef.startVertex.x * this.gridScale - 4, _linedef.startVertex.y * this.gridScale - 4, 8, 8);
-                            this.hitContext.clearRect(_linedef.endVertex.x * this.gridScale - 4, _linedef.endVertex.y * this.gridScale - 4, 8, 8);
-                        }
-                        var hitData = this.hitContext.getImageData(x * this.gridScale, y * this.gridScale, 1, 1).data;
-                        if (hitData[0] != 0 || hitData[1] != 0 || hitData[2] != 0 || hitData[3] != 0) {
-                            hitObject = sector;
-                            break;
-                        }
-                        this.hitContext.closePath();
+                    this.hitContext.beginPath();
+                    this.hitContext.arc(thing.x * this.gridScale, thing.y * this.gridScale, iconSize / 2, 0, 2 * Math.PI);
+                    this.hitContext.fill();
+                    this.hitContext.closePath();
+                    var _hitData2 = this.hitContext.getImageData(x * this.gridScale, y * this.gridScale, 1, 1).data;
+                    if (_hitData2[0] != 0 || _hitData2[1] != 0 || _hitData2[2] != 0 || _hitData2[3] != 0) {
+                        hitObject = thing;
+                        break;
                     }
                 }
             } catch (err) {
@@ -795,6 +849,95 @@ var Editor = function () {
                 }
             }
 
+            if (!hitObject) {
+                var _iteratorNormalCompletion5 = true;
+                var _didIteratorError5 = false;
+                var _iteratorError5 = undefined;
+
+                try {
+                    for (var _iterator5 = this.sectors[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                        var sector = _step5.value;
+                        var _iteratorNormalCompletion6 = true;
+                        var _didIteratorError6 = false;
+                        var _iteratorError6 = undefined;
+
+                        try {
+                            for (var _iterator6 = sector.linedefs[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                                var _linedef2 = _step6.value;
+
+                                this.hitContext.clearRect(0, 0, this.hitCanvas.width, this.hitCanvas.height);
+                                this.hitContext.beginPath();
+                                this.hitContext.strokeStyle = 'blue';
+                                this.hitContext.moveTo(_linedef2.startVertex.x * this.gridScale, _linedef2.startVertex.y * this.gridScale);
+                                this.hitContext.lineTo(_linedef2.endVertex.x * this.gridScale, _linedef2.endVertex.y * this.gridScale);
+                                this.hitContext.lineWidth = 12;
+                                this.hitContext.stroke();
+                                this.hitContext.closePath();
+                                this.hitContext.clearRect(_linedef2.startVertex.x * this.gridScale - 4, _linedef2.startVertex.y * this.gridScale - 4, 8, 8);
+                                this.hitContext.clearRect(_linedef2.endVertex.x * this.gridScale - 4, _linedef2.endVertex.y * this.gridScale - 4, 8, 8);
+                                var _hitData = this.hitContext.getImageData(x * this.gridScale, y * this.gridScale, 1, 1).data;
+                                if (_hitData[0] != 0 || _hitData[1] != 0 || _hitData[2] != 0 || _hitData[3] != 0) {
+                                    hitObject = _linedef2;
+                                    break;
+                                }
+                            }
+                        } catch (err) {
+                            _didIteratorError6 = true;
+                            _iteratorError6 = err;
+                        } finally {
+                            try {
+                                if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                                    _iterator6.return();
+                                }
+                            } finally {
+                                if (_didIteratorError6) {
+                                    throw _iteratorError6;
+                                }
+                            }
+                        }
+
+                        if (!hitObject) {
+                            this.hitContext.beginPath();
+                            for (var i = 0; i < sector.linedefs.length; i++) {
+                                var linedef = sector.linedefs[i];
+
+                                if (i == 0) {
+                                    this.hitContext.moveTo(linedef.startVertex.x * this.gridScale, linedef.startVertex.y * this.gridScale);
+                                    this.hitContext.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
+                                } else {
+                                    this.hitContext.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
+                                }
+                            }
+                            this.hitContext.fill();
+                            for (var _i = 0; _i < sector.linedefs.length; _i++) {
+                                var _linedef = sector.linedefs[_i];
+                                this.hitContext.clearRect(_linedef.startVertex.x * this.gridScale - 4, _linedef.startVertex.y * this.gridScale - 4, 8, 8);
+                                this.hitContext.clearRect(_linedef.endVertex.x * this.gridScale - 4, _linedef.endVertex.y * this.gridScale - 4, 8, 8);
+                            }
+                            var hitData = this.hitContext.getImageData(x * this.gridScale, y * this.gridScale, 1, 1).data;
+                            if (hitData[0] != 0 || hitData[1] != 0 || hitData[2] != 0 || hitData[3] != 0) {
+                                hitObject = sector;
+                                break;
+                            }
+                            this.hitContext.closePath();
+                        }
+                    }
+                } catch (err) {
+                    _didIteratorError5 = true;
+                    _iteratorError5 = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                            _iterator5.return();
+                        }
+                    } finally {
+                        if (_didIteratorError5) {
+                            throw _iteratorError5;
+                        }
+                    }
+                }
+            }
+
             this.selectedObject = hitObject;
         }
     }, {
@@ -803,65 +946,100 @@ var Editor = function () {
             var x = event.offsetX / this.gridScale;
             var y = event.offsetY / this.gridScale;
             var hitObject = null;
+            var iconSize = 16 * this.gridScale;
 
-            var _iteratorNormalCompletion6 = true;
-            var _didIteratorError6 = false;
-            var _iteratorError6 = undefined;
+            var _iteratorNormalCompletion7 = true;
+            var _didIteratorError7 = false;
+            var _iteratorError7 = undefined;
 
             try {
-                for (var _iterator6 = this.sectors[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-                    var sector = _step6.value;
-                    var _iteratorNormalCompletion7 = true;
-                    var _didIteratorError7 = false;
-                    var _iteratorError7 = undefined;
+                for (var _iterator7 = this.things[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+                    var thing = _step7.value;
 
-                    try {
-                        for (var _iterator7 = sector.linedefs[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-                            var linedef = _step7.value;
-
-                            this.hitContext.clearRect(0, 0, this.hitCanvas.width, this.hitCanvas.height);
-                            this.hitContext.beginPath();
-                            this.hitContext.rect(linedef.startVertex.x * this.gridScale - 4, linedef.startVertex.y * this.gridScale - 4, 8, 8);
-                            if (this.hitContext.isPointInPath(x * this.gridScale, y * this.gridScale)) {
-                                hitObject = linedef.startVertex;
-                                break;
-                            }
-                            this.hitContext.closePath();
-
-                            this.hitContext.beginPath();
-                            this.hitContext.rect(linedef.endVertex.x * this.gridScale - 4, linedef.endVertex.y * this.gridScale - 4, 8, 8);
-                            if (this.hitContext.isPointInPath(x * this.gridScale, y * this.gridScale)) {
-                                hitObject = linedef.endVertex;
-                                break;
-                            }
-                            this.hitContext.closePath();
-                        }
-                    } catch (err) {
-                        _didIteratorError7 = true;
-                        _iteratorError7 = err;
-                    } finally {
-                        try {
-                            if (!_iteratorNormalCompletion7 && _iterator7.return) {
-                                _iterator7.return();
-                            }
-                        } finally {
-                            if (_didIteratorError7) {
-                                throw _iteratorError7;
-                            }
-                        }
+                    this.hitContext.clearRect(0, 0, this.hitCanvas.width, this.hitCanvas.height);
+                    this.hitContext.beginPath();
+                    this.hitContext.arc(thing.x * this.gridScale, thing.y * this.gridScale, iconSize / 2, 0, 2 * Math.PI);
+                    if (this.hitContext.isPointInPath(x * this.gridScale, y * this.gridScale)) {
+                        hitObject = thing;
+                        break;
                     }
+                    this.hitContext.closePath();
                 }
             } catch (err) {
-                _didIteratorError6 = true;
-                _iteratorError6 = err;
+                _didIteratorError7 = true;
+                _iteratorError7 = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion6 && _iterator6.return) {
-                        _iterator6.return();
+                    if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                        _iterator7.return();
                     }
                 } finally {
-                    if (_didIteratorError6) {
-                        throw _iteratorError6;
+                    if (_didIteratorError7) {
+                        throw _iteratorError7;
+                    }
+                }
+            }
+
+            if (!hitObject) {
+                var _iteratorNormalCompletion8 = true;
+                var _didIteratorError8 = false;
+                var _iteratorError8 = undefined;
+
+                try {
+                    for (var _iterator8 = this.sectors[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+                        var sector = _step8.value;
+                        var _iteratorNormalCompletion9 = true;
+                        var _didIteratorError9 = false;
+                        var _iteratorError9 = undefined;
+
+                        try {
+                            for (var _iterator9 = sector.linedefs[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+                                var linedef = _step9.value;
+
+                                this.hitContext.clearRect(0, 0, this.hitCanvas.width, this.hitCanvas.height);
+                                this.hitContext.beginPath();
+                                this.hitContext.rect(linedef.startVertex.x * this.gridScale - 4, linedef.startVertex.y * this.gridScale - 4, 8, 8);
+                                if (this.hitContext.isPointInPath(x * this.gridScale, y * this.gridScale)) {
+                                    hitObject = linedef.startVertex;
+                                    break;
+                                }
+                                this.hitContext.closePath();
+
+                                this.hitContext.beginPath();
+                                this.hitContext.rect(linedef.endVertex.x * this.gridScale - 4, linedef.endVertex.y * this.gridScale - 4, 8, 8);
+                                if (this.hitContext.isPointInPath(x * this.gridScale, y * this.gridScale)) {
+                                    hitObject = linedef.endVertex;
+                                    break;
+                                }
+                                this.hitContext.closePath();
+                            }
+                        } catch (err) {
+                            _didIteratorError9 = true;
+                            _iteratorError9 = err;
+                        } finally {
+                            try {
+                                if (!_iteratorNormalCompletion9 && _iterator9.return) {
+                                    _iterator9.return();
+                                }
+                            } finally {
+                                if (_didIteratorError9) {
+                                    throw _iteratorError9;
+                                }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    _didIteratorError8 = true;
+                    _iteratorError8 = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion8 && _iterator8.return) {
+                            _iterator8.return();
+                        }
+                    } finally {
+                        if (_didIteratorError8) {
+                            throw _iteratorError8;
+                        }
                     }
                 }
             }
@@ -892,13 +1070,13 @@ var Editor = function () {
             var addVertex = true;
             var vertex = null;
 
-            var _iteratorNormalCompletion8 = true;
-            var _didIteratorError8 = false;
-            var _iteratorError8 = undefined;
+            var _iteratorNormalCompletion10 = true;
+            var _didIteratorError10 = false;
+            var _iteratorError10 = undefined;
 
             try {
-                for (var _iterator8 = this.selectedSector.linedefs[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-                    var _linedef4 = _step8.value;
+                for (var _iterator10 = this.selectedSector.linedefs[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+                    var _linedef4 = _step10.value;
 
                     var startVertex = _linedef4.startVertex;
                     var endVertex = _linedef4.endVertex;
@@ -912,16 +1090,16 @@ var Editor = function () {
                     }
                 }
             } catch (err) {
-                _didIteratorError8 = true;
-                _iteratorError8 = err;
+                _didIteratorError10 = true;
+                _iteratorError10 = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion8 && _iterator8.return) {
-                        _iterator8.return();
+                    if (!_iteratorNormalCompletion10 && _iterator10.return) {
+                        _iterator10.return();
                     }
                 } finally {
-                    if (_didIteratorError8) {
-                        throw _iteratorError8;
+                    if (_didIteratorError10) {
+                        throw _iteratorError10;
                     }
                 }
             }
@@ -929,13 +1107,13 @@ var Editor = function () {
             var foundLineDef = false;
             if (this.verticesToAdd.length > 1) {
                 var lastVertex = this.verticesToAdd[this.verticesToAdd.length - 1];
-                var _iteratorNormalCompletion9 = true;
-                var _didIteratorError9 = false;
-                var _iteratorError9 = undefined;
+                var _iteratorNormalCompletion11 = true;
+                var _didIteratorError11 = false;
+                var _iteratorError11 = undefined;
 
                 try {
-                    for (var _iterator9 = window.linedefs[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-                        var linedef = _step9.value;
+                    for (var _iterator11 = window.linedefs[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+                        var linedef = _step11.value;
 
                         var match = linedef.checkMatch({ x: x, y: y }, lastVertex);
                         if (match) {
@@ -948,16 +1126,16 @@ var Editor = function () {
                         }
                     }
                 } catch (err) {
-                    _didIteratorError9 = true;
-                    _iteratorError9 = err;
+                    _didIteratorError11 = true;
+                    _iteratorError11 = err;
                 } finally {
                     try {
-                        if (!_iteratorNormalCompletion9 && _iterator9.return) {
-                            _iterator9.return();
+                        if (!_iteratorNormalCompletion11 && _iterator11.return) {
+                            _iterator11.return();
                         }
                     } finally {
-                        if (_didIteratorError9) {
-                            throw _iteratorError9;
+                        if (_didIteratorError11) {
+                            throw _iteratorError11;
                         }
                     }
                 }
@@ -966,29 +1144,29 @@ var Editor = function () {
             if (!foundLineDef) {
                 if (addVertex) {
                     var foundVertex = false;
-                    var _iteratorNormalCompletion10 = true;
-                    var _didIteratorError10 = false;
-                    var _iteratorError10 = undefined;
+                    var _iteratorNormalCompletion12 = true;
+                    var _didIteratorError12 = false;
+                    var _iteratorError12 = undefined;
 
                     try {
-                        for (var _iterator10 = window.vertices[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-                            var v = _step10.value;
+                        for (var _iterator12 = window.vertices[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
+                            var v = _step12.value;
 
                             if (v.x == x && v.y == y) {
                                 foundVertex = v;
                             }
                         }
                     } catch (err) {
-                        _didIteratorError10 = true;
-                        _iteratorError10 = err;
+                        _didIteratorError12 = true;
+                        _iteratorError12 = err;
                     } finally {
                         try {
-                            if (!_iteratorNormalCompletion10 && _iterator10.return) {
-                                _iterator10.return();
+                            if (!_iteratorNormalCompletion12 && _iterator12.return) {
+                                _iterator12.return();
                             }
                         } finally {
-                            if (_didIteratorError10) {
-                                throw _iteratorError10;
+                            if (_didIteratorError12) {
+                                throw _iteratorError12;
                             }
                         }
                     }
@@ -1013,6 +1191,17 @@ var Editor = function () {
                 this.selectedSector.closed = true;
                 this.verticesToAdd = [];
                 this.selectedSector = null;
+            }
+        }
+    }, {
+        key: 'placeThing',
+        value: function placeThing(event) {
+            var x = event.offsetX / this.gridScale;
+            var y = event.offsetY / this.gridScale;
+            var thing = this.thingSelector.selection;
+            if (thing) {
+                var newThing = new _thing2.default(x, y, thing.sprite, thing.type, thing.hex);
+                this.things.push(newThing);
             }
         }
     }, {
@@ -1054,13 +1243,13 @@ var Editor = function () {
     }, {
         key: 'drawSectors',
         value: function drawSectors() {
-            var _iteratorNormalCompletion11 = true;
-            var _didIteratorError11 = false;
-            var _iteratorError11 = undefined;
+            var _iteratorNormalCompletion13 = true;
+            var _didIteratorError13 = false;
+            var _iteratorError13 = undefined;
 
             try {
-                for (var _iterator11 = this.sectors[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
-                    var sector = _step11.value;
+                for (var _iterator13 = this.sectors[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
+                    var sector = _step13.value;
 
                     if (sector.closed) {
                         this.context.beginPath();
@@ -1091,8 +1280,10 @@ var Editor = function () {
                             this.context.moveTo(_linedef5.startVertex.x * this.gridScale, _linedef5.startVertex.y * this.gridScale);
                             this.context.lineTo(_linedef5.endVertex.x * this.gridScale, _linedef5.endVertex.y * this.gridScale);
                             this.context.stroke();
-                            this.context.fillRect(_linedef5.startVertex.x * this.gridScale - 6, _linedef5.startVertex.y * this.gridScale - 6, 12, 12);
-                            this.context.fillRect(_linedef5.endVertex.x * this.gridScale - 6, _linedef5.endVertex.y * this.gridScale - 6, 12, 12);
+                            if (this.tool != 'thing') {
+                                this.context.fillRect(_linedef5.startVertex.x * this.gridScale - 6, _linedef5.startVertex.y * this.gridScale - 6, 12, 12);
+                                this.context.fillRect(_linedef5.endVertex.x * this.gridScale - 6, _linedef5.endVertex.y * this.gridScale - 6, 12, 12);
+                            }
                             this.context.closePath();
                         }
                     } else {
@@ -1100,28 +1291,28 @@ var Editor = function () {
                         this.context.strokeStyle = '#f39c12';
                         this.context.fillStyle = '#f39c12';
                         this.context.lineWidth = 2;
-                        var _iteratorNormalCompletion12 = true;
-                        var _didIteratorError12 = false;
-                        var _iteratorError12 = undefined;
+                        var _iteratorNormalCompletion14 = true;
+                        var _didIteratorError14 = false;
+                        var _iteratorError14 = undefined;
 
                         try {
-                            for (var _iterator12 = this.verticesToAdd[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
-                                var vertex = _step12.value;
+                            for (var _iterator14 = this.verticesToAdd[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
+                                var vertex = _step14.value;
 
                                 this.context.lineTo(vertex.x * this.gridScale, vertex.y * this.gridScale);
                                 this.context.fillRect(vertex.x * this.gridScale - 4, vertex.y * this.gridScale - 4, 8, 8);
                             }
                         } catch (err) {
-                            _didIteratorError12 = true;
-                            _iteratorError12 = err;
+                            _didIteratorError14 = true;
+                            _iteratorError14 = err;
                         } finally {
                             try {
-                                if (!_iteratorNormalCompletion12 && _iterator12.return) {
-                                    _iterator12.return();
+                                if (!_iteratorNormalCompletion14 && _iterator14.return) {
+                                    _iterator14.return();
                                 }
                             } finally {
-                                if (_didIteratorError12) {
-                                    throw _iteratorError12;
+                                if (_didIteratorError14) {
+                                    throw _iteratorError14;
                                 }
                             }
                         }
@@ -1131,16 +1322,16 @@ var Editor = function () {
                     }
                 }
             } catch (err) {
-                _didIteratorError11 = true;
-                _iteratorError11 = err;
+                _didIteratorError13 = true;
+                _iteratorError13 = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion11 && _iterator11.return) {
-                        _iterator11.return();
+                    if (!_iteratorNormalCompletion13 && _iterator13.return) {
+                        _iterator13.return();
                     }
                 } finally {
-                    if (_didIteratorError11) {
-                        throw _iteratorError11;
+                    if (_didIteratorError13) {
+                        throw _iteratorError13;
                     }
                 }
             }
@@ -1148,7 +1339,7 @@ var Editor = function () {
     }, {
         key: 'save',
         value: function save() {
-            var json = _editableMap2.default.toJSON(this.sectors);
+            var json = _editableMap2.default.toJSON(this.sectors, this.things);
             var file = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json, null, '\t'));
             var filename = prompt("Enter Filename", "level1");
             if (filename) {
@@ -1165,8 +1356,13 @@ var Editor = function () {
 
             var reader = new FileReader();
             reader.onload = function (e) {
+                (0, _editorObjects.ClearMap)();
+                _this2.things = [];
+                window.things = [];
                 var json = JSON.parse(e.target.result);
-                _this2.sectors = _editableMap2.default.fromJSON(json);
+                json = _editableMap2.default.fromJSON(json);
+                _this2.sectors = json.sectors;
+                _this2.things = json.things;
             };
             reader.readAsText(event.target.files[0]);
         }
@@ -1228,6 +1424,51 @@ var Editor = function () {
                         this.context.fill();
                         this.context.closePath();
                         break;
+                    case 'thing':
+                        this.context.beginPath();
+                        this.context.strokeStyle = '#FFCF4B';
+                        this.context.lineWidth = 4;
+                        this.context.arc(this.selectedObject.x * this.gridScale, this.selectedObject.y * this.gridScale, 16 * this.gridScale / 2, 0, 2 * Math.PI);
+                        this.context.stroke();
+                        this.context.closePath();
+                        break;
+                }
+            }
+        }
+    }, {
+        key: 'drawThings',
+        value: function drawThings() {
+            var iconSize = 16 * this.gridScale;
+            var _iteratorNormalCompletion15 = true;
+            var _didIteratorError15 = false;
+            var _iteratorError15 = undefined;
+
+            try {
+                for (var _iterator15 = this.things[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
+                    var thing = _step15.value;
+
+                    this.context.beginPath();
+                    switch (thing.thingType) {
+                        case 'player_starts':
+                            this.context.fillStyle = '#2ecc71';
+                            this.context.arc(thing.x * this.gridScale, thing.y * this.gridScale, iconSize / 2, 0, 2 * Math.PI);
+                            this.context.fill();
+                            break;
+                    }
+                    this.context.closePath();
+                }
+            } catch (err) {
+                _didIteratorError15 = true;
+                _iteratorError15 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion15 && _iterator15.return) {
+                        _iterator15.return();
+                    }
+                } finally {
+                    if (_didIteratorError15) {
+                        throw _iteratorError15;
+                    }
                 }
             }
         }
@@ -1240,6 +1481,7 @@ var Editor = function () {
             this.drawSectors();
             this.drawTools();
             this.drawSelections();
+            this.drawThings();
 
             window.requestAnimationFrame(function () {
                 return _this3.update();
@@ -1252,6 +1494,7 @@ var Editor = function () {
             this.ui.edit.style.display = this.selectedObject ? '' : 'none';
             this.ui.editButton.style.display = this.selectedObject ? '' : 'none';
             this.ui.editButton.innerHTML = 'Edit ' + (this.selectedObject ? this.selectedObject.toString() : '');
+            this.ui.thingContainer.style.display = this.tool == 'thing' ? '' : 'none';
         }
     }, {
         key: 'tool',
@@ -1300,6 +1543,12 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _editorObjects = __webpack_require__(1);
 
+var _thing = __webpack_require__(10);
+
+var _thing2 = _interopRequireDefault(_thing);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var EditableMap = function () {
@@ -1310,48 +1559,51 @@ var EditableMap = function () {
     _createClass(EditableMap, null, [{
         key: 'fromJSON',
         value: function fromJSON(json) {
-            var sectors = [];
+            var object = {
+                sectors: [],
+                things: []
+            };
             var _iteratorNormalCompletion = true;
             var _didIteratorError = false;
             var _iteratorError = undefined;
 
             try {
-                for (var _iterator = json[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                for (var _iterator = json.sectors[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                     var sector = _step.value;
 
                     var linedefs = [];
-                    var _iteratorNormalCompletion2 = true;
-                    var _didIteratorError2 = false;
-                    var _iteratorError2 = undefined;
+                    var _iteratorNormalCompletion3 = true;
+                    var _didIteratorError3 = false;
+                    var _iteratorError3 = undefined;
 
                     try {
-                        for (var _iterator2 = sector.linedefs[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                            var linedef = _step2.value;
+                        for (var _iterator3 = sector.linedefs[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                            var linedef = _step3.value;
 
                             var currentLinedef = null;
-                            var _iteratorNormalCompletion3 = true;
-                            var _didIteratorError3 = false;
-                            var _iteratorError3 = undefined;
+                            var _iteratorNormalCompletion4 = true;
+                            var _didIteratorError4 = false;
+                            var _iteratorError4 = undefined;
 
                             try {
-                                for (var _iterator3 = window.linedefs[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                                    var l = _step3.value;
+                                for (var _iterator4 = window.linedefs[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                                    var l = _step4.value;
 
                                     if (l.id == linedef.id) {
                                         currentLinedef = l;
                                     }
                                 }
                             } catch (err) {
-                                _didIteratorError3 = true;
-                                _iteratorError3 = err;
+                                _didIteratorError4 = true;
+                                _iteratorError4 = err;
                             } finally {
                                 try {
-                                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                                        _iterator3.return();
+                                    if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                                        _iterator4.return();
                                     }
                                 } finally {
-                                    if (_didIteratorError3) {
-                                        throw _iteratorError3;
+                                    if (_didIteratorError4) {
+                                        throw _iteratorError4;
                                     }
                                 }
                             }
@@ -1359,28 +1611,28 @@ var EditableMap = function () {
                             if (!currentLinedef) {
                                 var startVertex = new _editorObjects.Vertex(linedef.startVertex.x, linedef.startVertex.y, linedef.startVertex.id);
                                 var endVertex = new _editorObjects.Vertex(linedef.endVertex.x, linedef.endVertex.y, linedef.endVertex.id);
-                                currentLinedef = new _editorObjects.LineDef(startVertex, endVertex, linedef.id);
+                                currentLinedef = new _editorObjects.LineDef(startVertex, endVertex, linedef.leftSidedef ? linedef.leftSidedef : '', linedef.rightSidedef ? linedef.rightSidedef : '', linedef.id);
                             }
 
                             linedefs.push(currentLinedef);
                         }
                     } catch (err) {
-                        _didIteratorError2 = true;
-                        _iteratorError2 = err;
+                        _didIteratorError3 = true;
+                        _iteratorError3 = err;
                     } finally {
                         try {
-                            if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                                _iterator2.return();
+                            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                                _iterator3.return();
                             }
                         } finally {
-                            if (_didIteratorError2) {
-                                throw _iteratorError2;
+                            if (_didIteratorError3) {
+                                throw _iteratorError3;
                             }
                         }
                     }
 
-                    var currentSector = new _editorObjects.Sector(linedefs, true, sector.id);
-                    sectors.push(currentSector);
+                    var currentSector = new _editorObjects.Sector(linedefs, true, sector.floorHeight, sector.ceilingHeight, sector.id);
+                    object.sectors.push(currentSector);
                 }
             } catch (err) {
                 _didIteratorError = true;
@@ -1397,29 +1649,57 @@ var EditableMap = function () {
                 }
             }
 
-            return sectors;
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+                for (var _iterator2 = json.things[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var thing = _step2.value;
+
+                    object.things.push(new _thing2.default(thing.x, thing.y, thing.sprite, thing.type, thing.hex, thing.id));
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                        _iterator2.return();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
+            }
+
+            return object;
         }
     }, {
         key: 'toJSON',
-        value: function toJSON(map) {
-            var json = [];
+        value: function toJSON(map, things) {
+            var json = {
+                sectors: [],
+                things: []
+            };
 
-            var _iteratorNormalCompletion4 = true;
-            var _didIteratorError4 = false;
-            var _iteratorError4 = undefined;
+            var _iteratorNormalCompletion5 = true;
+            var _didIteratorError5 = false;
+            var _iteratorError5 = undefined;
 
             try {
-                for (var _iterator4 = map[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                    var sector = _step4.value;
+                for (var _iterator5 = map[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                    var sector = _step5.value;
 
                     var linedefs = [];
-                    var _iteratorNormalCompletion5 = true;
-                    var _didIteratorError5 = false;
-                    var _iteratorError5 = undefined;
+                    var _iteratorNormalCompletion7 = true;
+                    var _didIteratorError7 = false;
+                    var _iteratorError7 = undefined;
 
                     try {
-                        for (var _iterator5 = sector.linedefs[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-                            var linedef = _step5.value;
+                        for (var _iterator7 = sector.linedefs[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+                            var linedef = _step7.value;
 
                             var currentLinedef = {
                                 id: linedef.id,
@@ -1439,16 +1719,16 @@ var EditableMap = function () {
                             linedefs.push(currentLinedef);
                         }
                     } catch (err) {
-                        _didIteratorError5 = true;
-                        _iteratorError5 = err;
+                        _didIteratorError7 = true;
+                        _iteratorError7 = err;
                     } finally {
                         try {
-                            if (!_iteratorNormalCompletion5 && _iterator5.return) {
-                                _iterator5.return();
+                            if (!_iteratorNormalCompletion7 && _iterator7.return) {
+                                _iterator7.return();
                             }
                         } finally {
-                            if (_didIteratorError5) {
-                                throw _iteratorError5;
+                            if (_didIteratorError7) {
+                                throw _iteratorError7;
                             }
                         }
                     }
@@ -1459,22 +1739,56 @@ var EditableMap = function () {
                         floorHeight: sector.floorHeight,
                         ceilingHeight: sector.ceilingHeight
                     };
-                    json.push(currentSector);
+                    json.sectors.push(currentSector);
                 }
             } catch (err) {
-                _didIteratorError4 = true;
-                _iteratorError4 = err;
+                _didIteratorError5 = true;
+                _iteratorError5 = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                        _iterator4.return();
+                    if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                        _iterator5.return();
                     }
                 } finally {
-                    if (_didIteratorError4) {
-                        throw _iteratorError4;
+                    if (_didIteratorError5) {
+                        throw _iteratorError5;
                     }
                 }
             }
+
+            var _iteratorNormalCompletion6 = true;
+            var _didIteratorError6 = false;
+            var _iteratorError6 = undefined;
+
+            try {
+                for (var _iterator6 = things[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                    var thing = _step6.value;
+
+                    json.things.push({
+                        id: thing.id,
+                        x: thing.x,
+                        y: thing.y,
+                        sprite: thing.sprite,
+                        type: thing.thingType,
+                        hex: thing.hex
+                    });
+                }
+            } catch (err) {
+                _didIteratorError6 = true;
+                _iteratorError6 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                        _iterator6.return();
+                    }
+                } finally {
+                    if (_didIteratorError6) {
+                        throw _iteratorError6;
+                    }
+                }
+            }
+
+            console.log(json);
 
             return json;
         }
@@ -1484,6 +1798,160 @@ var EditableMap = function () {
 }();
 
 exports.default = EditableMap;
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _things = __webpack_require__(9);
+
+var _things2 = _interopRequireDefault(_things);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var ThingSelector = function () {
+    function ThingSelector(selector) {
+        _classCallCheck(this, ThingSelector);
+
+        this.selector = selector;
+        this.selection = null;
+
+        this.prepareOptions();
+        this.bindEvents();
+    }
+
+    _createClass(ThingSelector, [{
+        key: 'prepareOptions',
+        value: function prepareOptions() {
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = _things2.default[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var thing = _step.value;
+
+                    var option = document.createElement('option');
+                    option.value = thing.hex;
+                    option.text = thing.name;
+                    option.setAttribute('data-sprite', thing.sprite);
+                    option.setAttribute('data-type', thing.type);
+
+                    this.selector.appendChild(option);
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+        }
+    }, {
+        key: 'bindEvents',
+        value: function bindEvents() {
+            var _this = this;
+
+            this.selector.onchange = function (event) {
+                var selector = event.target;
+                var option = selector.options[selector.selectedIndex];
+                _this.selection = {
+                    hex: selector.value,
+                    sprite: option.getAttribute('data-sprite'),
+                    type: option.getAttribute('data-type')
+                };
+            };
+        }
+    }]);
+
+    return ThingSelector;
+}();
+
+exports.default = ThingSelector;
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+module.exports = [
+	{
+		"name": "Player 1 start",
+		"hex": "1",
+		"type": "player_starts",
+		"sprite": "PLAY"
+	},
+	{
+		"name": "Imp",
+		"hex": "BB9",
+		"type": "monsters",
+		"sprite": "TROO"
+	}
+];
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+window.things = [];
+
+var Thing = function () {
+    function Thing(x, y) {
+        var sprite = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+        var type = arguments[3];
+        var hex = arguments[4];
+        var id = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : window.things.length;
+
+        _classCallCheck(this, Thing);
+
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.hex = hex;
+        this.sprite = sprite;
+        this.thingType = type;
+        window.things.push(this);
+    }
+
+    _createClass(Thing, [{
+        key: 'type',
+        value: function type() {
+            return 'thing';
+        }
+    }]);
+
+    return Thing;
+}();
+
+exports.default = Thing;
 
 /***/ })
 /******/ ]);

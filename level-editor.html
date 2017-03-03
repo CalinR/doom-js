@@ -20,10 +20,18 @@
                 <input type="radio" name="tools" id="wall" onchange="editor.changeTool('wall')" /><label for="wall">Wall</label>
             </li>
             <li>
+                <input type="radio" name="tools" id="thing" onchange="editor.changeTool('thing')" /><label for="thing">Things</label>
+            </li>
+            <li>
                 <input type="checkbox" onchange="editor.toggleSnap(event)" name="snap" id="snap"/><label for="snap">Snap To Grid</label>
             </li>
             <li id="edit">
                 <button id="edit-button" onclick="editor.edit()">Edit</button>
+            </li>
+            <li id="thing-container">
+                <select id="thing-selector">
+                    <option value="">Select Thing</option>
+                </select>
             </li>
         </ul>
         <div class="editor-container"></div>

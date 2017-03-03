@@ -1,3 +1,5 @@
+window.nearPlane = 300;
+
 /**
  * STANDARD CAMERA
  * above view camera
@@ -18,7 +20,7 @@ export class Camera {
 
     render(map){
         this.clear();
-        for(let sector of map){
+        for(let sector of map.sectors){
             for(let linedef of sector.linedefs){
                 this.context.beginPath();
                 this.context.moveTo(linedef.vertices[0].x, linedef.vertices[0].y);
@@ -71,7 +73,7 @@ export class FollowCamera extends Camera {
         let originX = this.canvas.width/2;
         let originY = this.canvas.height/2;
 
-        for(let sector of map){
+        for(let sector of map.sectors){
             for(let linedef of sector.linedefs){
                 this.context.beginPath();
                 let vertex1 = this.transformVertex(linedef.vertices[0]);
@@ -115,7 +117,8 @@ export class PerspectiveCamera extends Camera {
         this.x = x;
         this.z = z;
         this.rotation = rotation;
-        this.nearPlane = height;
+        this.aspect = (width / height);
+        this.nearPlane = height / (2 / this.aspect); // This is some crappy math to always force a 90 degree FOV
     }
 
     get radians(){
@@ -144,7 +147,7 @@ export class PerspectiveCamera extends Camera {
     projectVertex(vertex, height){
         let originX = this.canvas.width / 2;
         let originY = this.canvas.height / 2;
-        let r = this.nearPlane / vertex.y;
+        let r = window.nearPlane / vertex.y;
 
         return {
             x: -(vertex.x * r) + originX,
@@ -158,7 +161,8 @@ export class PerspectiveCamera extends Camera {
         let originY = this.canvas.height / 2;
 
         this.clear();
-        for(let sector of map){
+        
+        for(let sector of map.sectors){
             let floorHeight = sector.floorHeight;
             let ceilingHeight = sector.ceilingHeight;
             for(let linedef of sector.linedefs){
@@ -200,7 +204,6 @@ export class PerspectiveCamera extends Camera {
                         this.context.stroke();
                         this.context.fill();
                         this.context.closePath();
-
                     }
                 }
             }

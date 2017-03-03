@@ -1,8 +1,12 @@
 import { Sector, LineDef, Vertex } from './objects'
+import Thing from './thing'
 
-const JsonToMap = (map) => {
-    let sectors = [];
-    for(let sector of map){
+const JsonToMap = (json) => {
+    let map = {
+        sectors: [],
+        things: []
+    };
+    for(let sector of json.sectors){
         let linedefs = [];
         for(let linedef of sector.linedefs){
             let currentLinedef = null;
@@ -19,9 +23,12 @@ const JsonToMap = (map) => {
             linedefs.push(currentLinedef);
         }
         let currentSector = new Sector(linedefs, sector.floorHeight, sector.ceilingHeight, sector.id)
-        sectors.push(currentSector);
+        map.sectors.push(currentSector);
     }
-    return sectors;
+    for(let thing of json.things){
+        map.things.push(new Thing(thing.x, thing.y, thing.sprite, thing.type, thing.hex, thing.id));
+    }
+    return map;
 }
 
 export default JsonToMap;

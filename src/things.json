@@ -1,0 +1,14 @@
+[
+    {
+        "name": "Player 1 start",
+        "hex": "1",
+        "type": "player_starts",
+        "sprite": "PLAY"
+    },
+    {
+        "name": "Imp",
+        "hex": "BB9",
+        "type": "monsters",
+        "sprite": "TROO"
+    }
+]

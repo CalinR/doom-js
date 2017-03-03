@@ -1,8 +1,10 @@
-import { LineDef, Vertex, Sector } from './editorObjects'
+import { LineDef, Vertex, Sector, ClearMap } from './editorObjects'
 import Modal from './modal'
 import SectorModal from './sectorModal'
 import LinedefModal from './linedefModal'
 import EditableMap from './editableMap'
+import ThingSelector from './thingSelector'
+import Thing from './thing'
 
 class Editor {
     constructor(){
@@ -40,8 +42,11 @@ class Editor {
         this._selectedObject = null;
         this.ui = {
             edit: document.getElementById('edit'),
-            editButton: document.getElementById('edit-button')
+            editButton: document.getElementById('edit-button'),
+            thingContainer: document.getElementById('thing-container')
         }
+        this.thingSelector = new ThingSelector(document.getElementById('thing-selector'));
+        this.things = [];
 
         document.getElementsByClassName('editor-container')[0].appendChild(this.grid);
         document.getElementsByClassName('editor-container')[0].appendChild(this.canvas);
@@ -84,6 +89,9 @@ class Editor {
             else if(this.tool == 'select'){
                 this.selectObject(event);
             }
+            else if(this.tool == 'thing'){
+                this.placeThing(event);
+            }
         }
         this.canvas.onmousedown = (event) => {
             if(this.tool == 'select'){
@@ -125,6 +133,10 @@ class Editor {
                         this.dragging.x = x;
                         this.dragging.y = y;
                     }
+                    if(this.dragging.type() == 'thing'){
+                        this.dragging.x = x;
+                        this.dragging.y = y;
+                    }
                 }
             }
         }
@@ -137,50 +149,65 @@ class Editor {
         let x = event.offsetX / this.gridScale;
         let y = event.offsetY / this.gridScale;
         let hitObject = null;
+        let iconSize = 16 * this.gridScale;
 
-        for(let sector of this.sectors){
-            for(let linedef of sector.linedefs){
-                this.hitContext.clearRect(0, 0, this.hitCanvas.width, this.hitCanvas.height);
-                this.hitContext.beginPath();
-                this.hitContext.strokeStyle = 'blue';
-                this.hitContext.moveTo(linedef.startVertex.x * this.gridScale, linedef.startVertex.y * this.gridScale);
-                this.hitContext.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
-                this.hitContext.lineWidth = 12;
-                this.hitContext.stroke();
-                this.hitContext.closePath();
-                this.hitContext.clearRect((linedef.startVertex.x * this.gridScale)-4, (linedef.startVertex.y * this.gridScale)-4, 8, 8);
-                this.hitContext.clearRect((linedef.endVertex.x * this.gridScale)-4, (linedef.endVertex.y * this.gridScale)-4, 8, 8);
-                let hitData = this.hitContext.getImageData(x * this.gridScale, y * this.gridScale, 1, 1).data;
-                if(hitData[0] != 0 || hitData[1] != 0 || hitData[2] != 0 || hitData[3] != 0){
-                    hitObject = linedef;
-                    break;
-                }
+        for(let thing of this.things){
+            this.hitContext.beginPath();
+            this.hitContext.arc((thing.x * this.gridScale), (thing.y * this.gridScale),iconSize/2,0,2*Math.PI);
+            this.hitContext.fill();
+            this.hitContext.closePath();
+            let hitData = this.hitContext.getImageData(x * this.gridScale, y * this.gridScale, 1, 1).data;
+            if(hitData[0] != 0 || hitData[1] != 0 || hitData[2] != 0 || hitData[3] != 0){
+                hitObject = thing;
+                break;
             }
-            if(!hitObject){
-                this.hitContext.beginPath();
-                for(let i=0; i<sector.linedefs.length; i++){
-                    let linedef = sector.linedefs[i];
+        }
 
-                    if(i==0){
-                        this.hitContext.moveTo(linedef.startVertex.x * this.gridScale, linedef.startVertex.y * this.gridScale);
-                        this.hitContext.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
-                    }
-                    else {
-                        this.hitContext.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
-                    }
-                }
-                this.hitContext.fill();
-                for(let i=0; i<sector.linedefs.length; i++){
-                    let linedef = sector.linedefs[i];
+        if(!hitObject){
+            for(let sector of this.sectors){
+                for(let linedef of sector.linedefs){
+                    this.hitContext.clearRect(0, 0, this.hitCanvas.width, this.hitCanvas.height);
+                    this.hitContext.beginPath();
+                    this.hitContext.strokeStyle = 'blue';
+                    this.hitContext.moveTo(linedef.startVertex.x * this.gridScale, linedef.startVertex.y * this.gridScale);
+                    this.hitContext.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
+                    this.hitContext.lineWidth = 12;
+                    this.hitContext.stroke();
+                    this.hitContext.closePath();
                     this.hitContext.clearRect((linedef.startVertex.x * this.gridScale)-4, (linedef.startVertex.y * this.gridScale)-4, 8, 8);
                     this.hitContext.clearRect((linedef.endVertex.x * this.gridScale)-4, (linedef.endVertex.y * this.gridScale)-4, 8, 8);
+                    let hitData = this.hitContext.getImageData(x * this.gridScale, y * this.gridScale, 1, 1).data;
+                    if(hitData[0] != 0 || hitData[1] != 0 || hitData[2] != 0 || hitData[3] != 0){
+                        hitObject = linedef;
+                        break;
+                    }
                 }
-                let hitData = this.hitContext.getImageData(x * this.gridScale, y * this.gridScale, 1, 1).data;
-                if(hitData[0] != 0 || hitData[1] != 0 || hitData[2] != 0 || hitData[3] != 0){
-                    hitObject = sector;
-                    break;
+                if(!hitObject){
+                    this.hitContext.beginPath();
+                    for(let i=0; i<sector.linedefs.length; i++){
+                        let linedef = sector.linedefs[i];
+
+                        if(i==0){
+                            this.hitContext.moveTo(linedef.startVertex.x * this.gridScale, linedef.startVertex.y * this.gridScale);
+                            this.hitContext.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
+                        }
+                        else {
+                            this.hitContext.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
+                        }
+                    }
+                    this.hitContext.fill();
+                    for(let i=0; i<sector.linedefs.length; i++){
+                        let linedef = sector.linedefs[i];
+                        this.hitContext.clearRect((linedef.startVertex.x * this.gridScale)-4, (linedef.startVertex.y * this.gridScale)-4, 8, 8);
+                        this.hitContext.clearRect((linedef.endVertex.x * this.gridScale)-4, (linedef.endVertex.y * this.gridScale)-4, 8, 8);
+                    }
+                    let hitData = this.hitContext.getImageData(x * this.gridScale, y * this.gridScale, 1, 1).data;
+                    if(hitData[0] != 0 || hitData[1] != 0 || hitData[2] != 0 || hitData[3] != 0){
+                        hitObject = sector;
+                        break;
+                    }
+                    this.hitContext.closePath();
                 }
-                this.hitContext.closePath();
             }
         }
 
@@ -191,25 +218,39 @@ class Editor {
         let x = event.offsetX / this.gridScale;
         let y = event.offsetY / this.gridScale;
         let hitObject = null;
+        let iconSize = 16 * this.gridScale;
 
-        for(let sector of this.sectors){
-            for(let linedef of sector.linedefs){
-                this.hitContext.clearRect(0, 0, this.hitCanvas.width, this.hitCanvas.height);
-                this.hitContext.beginPath();
-                this.hitContext.rect((linedef.startVertex.x * this.gridScale) - 4, (linedef.startVertex.y * this.gridScale) - 4, 8, 8);
-                if(this.hitContext.isPointInPath(x * this.gridScale, y * this.gridScale)){
-                    hitObject = linedef.startVertex;
-                    break;
-                }
-                this.hitContext.closePath();
+        for(let thing of this.things){
+            this.hitContext.clearRect(0, 0, this.hitCanvas.width, this.hitCanvas.height);
+            this.hitContext.beginPath();
+            this.hitContext.arc(thing.x * this.gridScale, thing.y * this.gridScale, iconSize/2, 0, 2 * Math.PI);
+            if(this.hitContext.isPointInPath(x * this.gridScale, y * this.gridScale)){
+                hitObject = thing;
+                break;
+            }
+            this.hitContext.closePath();
+        }
 
-                this.hitContext.beginPath();
-                this.hitContext.rect((linedef.endVertex.x * this.gridScale) - 4, (linedef.endVertex.y * this.gridScale) - 4, 8, 8);
-                if(this.hitContext.isPointInPath(x * this.gridScale, y * this.gridScale)){
-                    hitObject = linedef.endVertex;
-                    break;
+        if(!hitObject){
+            for(let sector of this.sectors){
+                for(let linedef of sector.linedefs){
+                    this.hitContext.clearRect(0, 0, this.hitCanvas.width, this.hitCanvas.height);
+                    this.hitContext.beginPath();
+                    this.hitContext.rect((linedef.startVertex.x * this.gridScale) - 4, (linedef.startVertex.y * this.gridScale) - 4, 8, 8);
+                    if(this.hitContext.isPointInPath(x * this.gridScale, y * this.gridScale)){
+                        hitObject = linedef.startVertex;
+                        break;
+                    }
+                    this.hitContext.closePath();
+
+                    this.hitContext.beginPath();
+                    this.hitContext.rect((linedef.endVertex.x * this.gridScale) - 4, (linedef.endVertex.y * this.gridScale) - 4, 8, 8);
+                    if(this.hitContext.isPointInPath(x * this.gridScale, y * this.gridScale)){
+                        hitObject = linedef.endVertex;
+                        break;
+                    }
+                    this.hitContext.closePath();
                 }
-                this.hitContext.closePath();
             }
         }
 
@@ -301,6 +342,16 @@ class Editor {
         }
     }
 
+    placeThing(event){
+        let x = event.offsetX / this.gridScale;
+        let y = event.offsetY / this.gridScale;
+        let thing = this.thingSelector.selection;
+        if(thing){
+            let newThing = new Thing(x, y, thing.sprite, thing.type, thing.hex);
+            this.things.push(newThing);
+        }
+    }
+
     drawGrid(){
         let gridSize = this.gridSize * this.gridScale;
         this.gridContext.strokeStyle = '#2c3e50';
@@ -366,8 +417,10 @@ class Editor {
                     this.context.moveTo(linedef.startVertex.x * this.gridScale, linedef.startVertex.y * this.gridScale);
                     this.context.lineTo(linedef.endVertex.x * this.gridScale, linedef.endVertex.y * this.gridScale);
                     this.context.stroke();
-                    this.context.fillRect((linedef.startVertex.x * this.gridScale) - 6, (linedef.startVertex.y * this.gridScale) - 6, 12, 12);
-                    this.context.fillRect((linedef.endVertex.x * this.gridScale) - 6, (linedef.endVertex.y * this.gridScale) - 6, 12, 12);
+                    if(this.tool != 'thing'){
+                        this.context.fillRect((linedef.startVertex.x * this.gridScale) - 6, (linedef.startVertex.y * this.gridScale) - 6, 12, 12);
+                        this.context.fillRect((linedef.endVertex.x * this.gridScale) - 6, (linedef.endVertex.y * this.gridScale) - 6, 12, 12);
+                    }
                     this.context.closePath();
                 }
             }
@@ -387,7 +440,7 @@ class Editor {
     }
 
     save(){
-        let json = EditableMap.toJSON(this.sectors);
+        let json = EditableMap.toJSON(this.sectors, this.things);
         let file = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json, null, '\t'));
         let filename = prompt("Enter Filename", "level1");
         if(filename){
@@ -401,9 +454,13 @@ class Editor {
     load(event){
         var reader = new FileReader();
         reader.onload = (e) => {
+            ClearMap();
+            this.things = [];
+            window.things = [];
             let json = JSON.parse(e.target.result);
-            this.sectors = EditableMap.fromJSON(json);
-
+            json = EditableMap.fromJSON(json);
+            this.sectors = json.sectors;
+            this.things = json.things;
         }
         reader.readAsText(event.target.files[0]);
     }
@@ -464,7 +521,30 @@ class Editor {
                     this.context.fill();
                     this.context.closePath();
                     break;
+                case 'thing':
+                    this.context.beginPath();
+                    this.context.strokeStyle = '#FFCF4B';
+                    this.context.lineWidth = 4;
+                    this.context.arc(this.selectedObject.x * this.gridScale, this.selectedObject.y * this.gridScale, (16 * this.gridScale)/2, 0, 2 * Math.PI);
+                    this.context.stroke();
+                    this.context.closePath();
+                    break;
             }
+        }
+    }
+
+    drawThings(){
+        let iconSize = 16 * this.gridScale;
+        for(let thing of this.things){
+            this.context.beginPath();
+            switch(thing.thingType){
+                case 'player_starts':
+                    this.context.fillStyle = '#2ecc71';
+                    this.context.arc((thing.x * this.gridScale), (thing.y * this.gridScale),iconSize/2,0,2*Math.PI);
+                    this.context.fill();
+                    break;
+            }
+            this.context.closePath();
         }
     }
 
@@ -473,6 +553,7 @@ class Editor {
         this.drawSectors();
         this.drawTools();
         this.drawSelections();
+        this.drawThings();
 
         window.requestAnimationFrame(() => this.update());
     }
@@ -482,7 +563,7 @@ class Editor {
         this.ui.edit.style.display = this.selectedObject ? '' : 'none';
         this.ui.editButton.style.display = this.selectedObject ? '' : 'none';
         this.ui.editButton.innerHTML = `Edit ${this.selectedObject ? this.selectedObject.toString() : ''}`;
-
+        this.ui.thingContainer.style.display = this.tool == 'thing' ? '' : 'none';
     }
 
 }

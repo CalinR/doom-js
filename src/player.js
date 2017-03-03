@@ -6,7 +6,7 @@ class Player extends GameObject {
         super(x, y, rotation);
         this.speed = 0;
         this.direction = 0;
-        this.moveSpeed = 50;
+        this.moveSpeed = 75;
         this.rotationSpeed = 90;
         this.bindControls();
     }
