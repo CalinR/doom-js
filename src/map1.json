@@ -15,8 +15,8 @@
 						"x": 16,
 						"y": 64
 					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
+					"leftSidedef": "#f1c40f",
+					"rightSidedef": null
 				},
 				{
 					"id": 1,
@@ -30,8 +30,8 @@
 						"x": 32,
 						"y": 80
 					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
+					"leftSidedef": "#9b59b6",
+					"rightSidedef": null
 				},
 				{
 					"id": 2,
@@ -45,8 +45,8 @@
 						"x": 64,
 						"y": 80
 					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
+					"leftSidedef": "#3498db",
+					"rightSidedef": null
 				},
 				{
 					"id": 3,
@@ -60,8 +60,8 @@
 						"x": 80,
 						"y": 64
 					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
+					"leftSidedef": "#2ecc71",
+					"rightSidedef": null
 				},
 				{
 					"id": 4,
@@ -90,8 +90,8 @@
 						"x": 64,
 						"y": 16
 					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
+					"leftSidedef": "#1abc9c",
+					"rightSidedef": null
 				},
 				{
 					"id": 6,
@@ -105,8 +105,8 @@
 						"x": 32,
 						"y": 16
 					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
+					"leftSidedef": "#e74c3c",
+					"rightSidedef": null
 				},
 				{
 					"id": 7,
@@ -120,8 +120,8 @@
 						"x": 16,
 						"y": 32
 					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
+					"leftSidedef": "#e67e22",
+					"rightSidedef": null
 				}
 			],
 			"floorHeight": 0,
@@ -142,8 +142,8 @@
 						"x": 144,
 						"y": 32
 					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
+					"leftSidedef": "#ecf0f1",
+					"rightSidedef": null
 				},
 				{
 					"id": 9,
@@ -172,8 +172,8 @@
 						"x": 80,
 						"y": 64
 					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
+					"leftSidedef": "#9b59b6",
+					"rightSidedef": null
 				},
 				{
 					"id": 4,
@@ -209,8 +209,8 @@
 						"x": 144,
 						"y": 96
 					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
+					"leftSidedef": "#e74c3c",
+					"rightSidedef": null
 				},
 				{
 					"id": 12,
@@ -224,8 +224,8 @@
 						"x": 112,
 						"y": 96
 					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
+					"leftSidedef": "#e67e22",
+					"rightSidedef": null
 				},
 				{
 					"id": 13,
@@ -239,8 +239,8 @@
 						"x": 112,
 						"y": 64
 					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
+					"leftSidedef": "#f1c40f",
+					"rightSidedef": null
 				},
 				{
 					"id": 9,

@@ -31,7 +31,6 @@ class Main {
                     this.player.y = thing.y;
                     break;
             }
-            console.log(thing);
         }
     }
 
