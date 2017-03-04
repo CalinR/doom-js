@@ -13,8 +13,8 @@ class Main {
         this.perspectiveCamera = new PerspectiveCamera(600, 600, 0, 0, 0);
         this.player = new Player(0, 200, 0);
         this.map = JsonToMap(map1);
-        this.gameLoop();
         this.setupThings();
+        this.gameLoop();
     }
 
     updateDeltaTime(){

@@ -328,6 +328,7 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
         _this2.rotation = rotation;
         _this2.aspect = width / height;
         _this2.nearPlane = height / (2 / _this2.aspect); // This is some crappy math to always force a 90 degree FOV
+        _this2.drawCache = [];
         return _this2;
     }
 
@@ -356,7 +357,7 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
 
             return {
                 x: -(vertex.x * r) + originX,
-                y: (height - 10) * r + originY,
+                y: -((height - 10) * r) + originY,
                 z: vertex.y
             };
         }
@@ -365,96 +366,170 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
         value: function render(map) {
             var originX = this.canvas.width / 2;
             var originY = this.canvas.height / 2;
+            this.drawCache = [];
 
             this.clear();
 
-            var _iteratorNormalCompletion5 = true;
-            var _didIteratorError5 = false;
-            var _iteratorError5 = undefined;
+            this.drawSector(map, 0);
 
-            try {
-                for (var _iterator5 = map.sectors[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-                    var sector = _step5.value;
+            // for(let sector of map.sectors){
+            //     let floorHeight = sector.floorHeight;
+            //     let ceilingHeight = sector.ceilingHeight;
+            //     for(let linedef of sector.linedefs){
+            //         if(linedef.leftSidedef){
+            //             let point1 = this.transformVertex(linedef.vertices[0]);
+            //             let point2 = this.transformVertex(linedef.vertices[1]);
+            //             let color = linedef.leftSidedef;
 
-                    var floorHeight = sector.floorHeight;
-                    var ceilingHeight = sector.ceilingHeight;
-                    var _iteratorNormalCompletion6 = true;
-                    var _didIteratorError6 = false;
-                    var _iteratorError6 = undefined;
+            //             if(point1.y > 0 || point2.y > 0){
+            //                 if(point1.y<0){
+            //                     let xDiff = point1.x - point2.x;
+            //                     let yDiff = point1.y - point2.y;
+            //                     let slope = xDiff / yDiff;
+            //                     let clipY = point2.y;
+            //                     point1.y = 1;
+            //                     point1.x = point2.x - point2.y * slope;
+            //                 }
+            //                 if(point2.y<0){
+            //                     let xDiff = point1.x - point2.x;
+            //                     let yDiff = point1.y - point2.y;
+            //                     let slope = xDiff / yDiff;
+            //                     point2.y = 1;
+            //                     point2.x = point1.x - point1.y * slope;
+            //                 }
 
-                    try {
-                        for (var _iterator6 = sector.linedefs[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-                            var linedef = _step6.value;
+            //                 let vertex1 = this.projectVertex(point1, floorHeight);
+            //                 let vertex2 = this.projectVertex(point2, floorHeight);
+            //                 let vertex3 = this.projectVertex(point2, ceilingHeight);
+            //                 let vertex4 = this.projectVertex(point1, ceilingHeight);
 
-                            if (linedef.leftSidedef) {
-                                var point1 = this.transformVertex(linedef.vertices[0]);
-                                var point2 = this.transformVertex(linedef.vertices[1]);
-                                var color = linedef.leftSidedef;
+            //                 this.context.beginPath();
+            //                 this.context.strokeStyle = '#000';
+            //                 this.context.fillStyle = color;
+            //                 this.context.moveTo(vertex1.x, vertex1.y);
+            //                 this.context.lineTo(vertex2.x, vertex2.y);
+            //                 this.context.lineTo(vertex3.x, vertex3.y);
+            //                 this.context.lineTo(vertex4.x, vertex4.y);
+            //                 this.context.lineTo(vertex1.x, vertex1.y);
+            //                 this.context.stroke();
+            //                 this.context.fill();
+            //                 this.context.closePath();
+            //             }
+            //         }
+            //     }
+            // }
+        }
+    }, {
+        key: 'drawSector',
+        value: function drawSector(map, index) {
+            var sector = map.sectors[index];
 
-                                if (point1.y > 0 || point2.y > 0) {
-                                    if (point1.y < 0) {
-                                        var xDiff = point1.x - point2.x;
-                                        var yDiff = point1.y - point2.y;
-                                        var slope = xDiff / yDiff;
-                                        var clipY = point2.y;
-                                        point1.y = 1;
-                                        point1.x = point2.x - point2.y * slope;
+            if (sector) {
+                var floorHeight = sector.floorHeight;
+                var ceilingHeight = sector.ceilingHeight;
+                var _iteratorNormalCompletion5 = true;
+                var _didIteratorError5 = false;
+                var _iteratorError5 = undefined;
+
+                try {
+                    for (var _iterator5 = sector.linedefs[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                        var linedef = _step5.value;
+
+                        if (linedef.leftSidedef) {
+                            var point1 = this.transformVertex(linedef.vertices[0]);
+                            var point2 = this.transformVertex(linedef.vertices[1]);
+                            var color = linedef.leftSidedef;
+
+                            if (point1.y > 0 || point2.y > 0) {
+                                if (point1.y < 0) {
+                                    var xDiff = point1.x - point2.x;
+                                    var yDiff = point1.y - point2.y;
+                                    var slope = xDiff / yDiff;
+                                    var clipY = point2.y;
+                                    point1.y = 1;
+                                    point1.x = point2.x - point2.y * slope;
+                                }
+                                if (point2.y < 0) {
+                                    var _xDiff2 = point1.x - point2.x;
+                                    var _yDiff2 = point1.y - point2.y;
+                                    var _slope2 = _xDiff2 / _yDiff2;
+                                    point2.y = 1;
+                                    point2.x = point1.x - point1.y * _slope2;
+                                }
+
+                                var vertex1 = this.projectVertex(point1, floorHeight);
+                                var vertex2 = this.projectVertex(point2, floorHeight);
+                                var vertex3 = this.projectVertex(point2, ceilingHeight);
+                                var vertex4 = this.projectVertex(point1, ceilingHeight);
+
+                                if ((vertex1.x > 0 || vertex2.x > 0) && (vertex1.x < this.canvas.width || vertex2.x < this.canvas.width)) {
+                                    var left = 0;
+                                    var right = 0;
+                                    var startHeight = 0;
+                                    var endHeight = 0;
+                                    var startY = 0;
+
+                                    if (vertex1.x < vertex2.x) {
+                                        left = Math.floor(vertex1.x);
+                                        right = Math.ceil(vertex2.x);
+                                        startHeight = vertex1.y - vertex4.y;
+                                        endHeight = vertex2.y - vertex3.y;
+                                        startY = vertex4.y;
+                                    } else {
+                                        left = Math.floor(vertex2.x);
+                                        right = Math.ceil(vertex1.x);
+                                        startHeight = vertex2.y - vertex3.y;
+                                        endHeight = vertex1.y - vertex4.y;
+                                        startY = vertex3.y;
                                     }
-                                    if (point2.y < 0) {
-                                        var _xDiff2 = point1.x - point2.x;
-                                        var _yDiff2 = point1.y - point2.y;
-                                        var _slope2 = _xDiff2 / _yDiff2;
-                                        point2.y = 1;
-                                        point2.x = point1.x - point1.y * _slope2;
-                                    }
+                                    var columns = right - left;
+                                    var heightDiff = (startHeight - endHeight) / columns;
+                                    this.context.fillStyle = color;
 
-                                    var vertex1 = this.projectVertex(point1, floorHeight);
-                                    var vertex2 = this.projectVertex(point2, floorHeight);
-                                    var vertex3 = this.projectVertex(point2, ceilingHeight);
-                                    var vertex4 = this.projectVertex(point1, ceilingHeight);
+                                    for (var i = 0; i < columns; i++) {
+                                        if (left + i >= 0 && left + i <= this.canvas.width) {
+                                            var yDecrease = heightDiff * i;
+                                            this.context.fillRect(left + i, startY + yDecrease / 2, 1, startHeight - yDecrease);
+                                        }
+                                    }
 
                                     this.context.beginPath();
                                     this.context.strokeStyle = '#000';
-                                    this.context.fillStyle = color;
                                     this.context.moveTo(vertex1.x, vertex1.y);
                                     this.context.lineTo(vertex2.x, vertex2.y);
                                     this.context.lineTo(vertex3.x, vertex3.y);
                                     this.context.lineTo(vertex4.x, vertex4.y);
                                     this.context.lineTo(vertex1.x, vertex1.y);
                                     this.context.stroke();
-                                    this.context.fill();
                                     this.context.closePath();
                                 }
                             }
                         }
-                    } catch (err) {
-                        _didIteratorError6 = true;
-                        _iteratorError6 = err;
+                    }
+                } catch (err) {
+                    _didIteratorError5 = true;
+                    _iteratorError5 = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                            _iterator5.return();
+                        }
                     } finally {
-                        try {
-                            if (!_iteratorNormalCompletion6 && _iterator6.return) {
-                                _iterator6.return();
-                            }
-                        } finally {
-                            if (_didIteratorError6) {
-                                throw _iteratorError6;
-                            }
+                        if (_didIteratorError5) {
+                            throw _iteratorError5;
                         }
                     }
                 }
-            } catch (err) {
-                _didIteratorError5 = true;
-                _iteratorError5 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion5 && _iterator5.return) {
-                        _iterator5.return();
-                    }
-                } finally {
-                    if (_didIteratorError5) {
-                        throw _iteratorError5;
-                    }
-                }
+
+                var newIndex = index + 1;
+                this.drawSector(map, newIndex);
+
+                // console.log(this.drawCache);
+
+                // setTimeout(() => {
+                //     let newIndex = index + 1;
+                //     this.drawSector(map, newIndex);
+                // }, 5000)
             }
         }
     }, {
@@ -615,13 +690,13 @@ module.exports = {
 					"id": 0,
 					"startVertex": {
 						"id": 0,
-						"x": 112,
-						"y": 96
+						"x": 16,
+						"y": 32
 					},
 					"endVertex": {
 						"id": 1,
-						"x": 128,
-						"y": 80
+						"x": 16,
+						"y": 64
 					},
 					"leftSidedef": "#cccccc",
 					"rightSidedef": "#cccccc"
@@ -630,12 +705,12 @@ module.exports = {
 					"id": 1,
 					"startVertex": {
 						"id": 1,
-						"x": 128,
-						"y": 80
+						"x": 16,
+						"y": 64
 					},
 					"endVertex": {
 						"id": 2,
-						"x": 160,
+						"x": 32,
 						"y": 80
 					},
 					"leftSidedef": "#cccccc",
@@ -645,13 +720,13 @@ module.exports = {
 					"id": 2,
 					"startVertex": {
 						"id": 2,
-						"x": 160,
+						"x": 32,
 						"y": 80
 					},
 					"endVertex": {
 						"id": 3,
-						"x": 176,
-						"y": 96
+						"x": 64,
+						"y": 80
 					},
 					"leftSidedef": "#cccccc",
 					"rightSidedef": "#cccccc"
@@ -660,43 +735,43 @@ module.exports = {
 					"id": 3,
 					"startVertex": {
 						"id": 3,
-						"x": 176,
-						"y": 96
+						"x": 64,
+						"y": 80
 					},
 					"endVertex": {
 						"id": 4,
-						"x": 176,
-						"y": 128
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				},
-				{
-					"id": 4,
-					"startVertex": {
-						"id": 4,
-						"x": 176,
-						"y": 128
-					},
-					"endVertex": {
-						"id": 5,
-						"x": 160,
-						"y": 144
+						"x": 80,
+						"y": 64
 					},
 					"leftSidedef": "#cccccc",
 					"rightSidedef": "#cccccc"
 				},
 				{
+					"id": 4,
+					"startVertex": {
+						"id": 4,
+						"x": 80,
+						"y": 64
+					},
+					"endVertex": {
+						"id": 5,
+						"x": 80,
+						"y": 32
+					},
+					"leftSidedef": null,
+					"rightSidedef": null
+				},
+				{
 					"id": 5,
 					"startVertex": {
 						"id": 5,
-						"x": 160,
-						"y": 144
+						"x": 80,
+						"y": 32
 					},
 					"endVertex": {
 						"id": 6,
-						"x": 128,
-						"y": 144
+						"x": 64,
+						"y": 16
 					},
 					"leftSidedef": "#cccccc",
 					"rightSidedef": "#cccccc"
@@ -705,13 +780,13 @@ module.exports = {
 					"id": 6,
 					"startVertex": {
 						"id": 6,
-						"x": 128,
-						"y": 144
+						"x": 64,
+						"y": 16
 					},
 					"endVertex": {
 						"id": 7,
-						"x": 112,
-						"y": 128
+						"x": 32,
+						"y": 16
 					},
 					"leftSidedef": "#cccccc",
 					"rightSidedef": "#cccccc"
@@ -720,20 +795,20 @@ module.exports = {
 					"id": 7,
 					"startVertex": {
 						"id": 7,
-						"x": 112,
-						"y": 128
+						"x": 32,
+						"y": 16
 					},
 					"endVertex": {
 						"id": 0,
-						"x": 112,
-						"y": 96
+						"x": 16,
+						"y": 32
 					},
 					"leftSidedef": "#cccccc",
 					"rightSidedef": "#cccccc"
 				}
 			],
-			"floorHeight": "0",
-			"ceilingHeight": "20"
+			"floorHeight": 0,
+			"ceilingHeight": 20
 		},
 		{
 			"id": 1,
@@ -741,14 +816,14 @@ module.exports = {
 				{
 					"id": 8,
 					"startVertex": {
-						"id": 3,
-						"x": 176,
-						"y": 96
+						"id": 5,
+						"x": 80,
+						"y": 32
 					},
 					"endVertex": {
 						"id": 8,
-						"x": 256,
-						"y": 96
+						"x": 144,
+						"y": 32
 					},
 					"leftSidedef": "#cccccc",
 					"rightSidedef": "#cccccc"
@@ -757,13 +832,13 @@ module.exports = {
 					"id": 9,
 					"startVertex": {
 						"id": 8,
-						"x": 256,
-						"y": 96
+						"x": 144,
+						"y": 32
 					},
 					"endVertex": {
 						"id": 9,
-						"x": 256,
-						"y": 128
+						"x": 112,
+						"y": 64
 					},
 					"leftSidedef": null,
 					"rightSidedef": null
@@ -772,35 +847,35 @@ module.exports = {
 					"id": 10,
 					"startVertex": {
 						"id": 9,
-						"x": 256,
-						"y": 128
+						"x": 112,
+						"y": 64
 					},
 					"endVertex": {
 						"id": 4,
-						"x": 176,
-						"y": 128
+						"x": 80,
+						"y": 64
 					},
 					"leftSidedef": "#cccccc",
 					"rightSidedef": "#cccccc"
 				},
 				{
-					"id": 3,
+					"id": 4,
 					"startVertex": {
-						"id": 3,
-						"x": 176,
-						"y": 96
+						"id": 4,
+						"x": 80,
+						"y": 64
 					},
 					"endVertex": {
-						"id": 4,
-						"x": 176,
-						"y": 128
+						"id": 5,
+						"x": 80,
+						"y": 32
 					},
 					"leftSidedef": null,
 					"rightSidedef": null
 				}
 			],
-			"floorHeight": "0",
-			"ceilingHeight": "20"
+			"floorHeight": 0,
+			"ceilingHeight": 20
 		},
 		{
 			"id": 2,
@@ -809,13 +884,13 @@ module.exports = {
 					"id": 11,
 					"startVertex": {
 						"id": 8,
-						"x": 256,
-						"y": 96
+						"x": 144,
+						"y": 32
 					},
 					"endVertex": {
 						"id": 10,
-						"x": 272,
-						"y": 80
+						"x": 144,
+						"y": 96
 					},
 					"leftSidedef": "#cccccc",
 					"rightSidedef": "#cccccc"
@@ -824,13 +899,13 @@ module.exports = {
 					"id": 12,
 					"startVertex": {
 						"id": 10,
-						"x": 272,
-						"y": 80
+						"x": 144,
+						"y": 96
 					},
 					"endVertex": {
 						"id": 11,
-						"x": 304,
-						"y": 80
+						"x": 112,
+						"y": 96
 					},
 					"leftSidedef": "#cccccc",
 					"rightSidedef": "#cccccc"
@@ -839,73 +914,13 @@ module.exports = {
 					"id": 13,
 					"startVertex": {
 						"id": 11,
-						"x": 304,
-						"y": 80
-					},
-					"endVertex": {
-						"id": 12,
-						"x": 320,
+						"x": 112,
 						"y": 96
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 14,
-					"startVertex": {
-						"id": 12,
-						"x": 320,
-						"y": 96
-					},
-					"endVertex": {
-						"id": 13,
-						"x": 320,
-						"y": 128
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				},
-				{
-					"id": 15,
-					"startVertex": {
-						"id": 13,
-						"x": 320,
-						"y": 128
-					},
-					"endVertex": {
-						"id": 14,
-						"x": 304,
-						"y": 144
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 16,
-					"startVertex": {
-						"id": 14,
-						"x": 304,
-						"y": 144
-					},
-					"endVertex": {
-						"id": 15,
-						"x": 272,
-						"y": 144
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				},
-				{
-					"id": 17,
-					"startVertex": {
-						"id": 15,
-						"x": 272,
-						"y": 144
 					},
 					"endVertex": {
 						"id": 9,
-						"x": 256,
-						"y": 128
+						"x": 112,
+						"y": 64
 					},
 					"leftSidedef": "#cccccc",
 					"rightSidedef": "#cccccc"
@@ -914,720 +929,27 @@ module.exports = {
 					"id": 9,
 					"startVertex": {
 						"id": 8,
-						"x": 256,
-						"y": 96
+						"x": 144,
+						"y": 32
 					},
 					"endVertex": {
 						"id": 9,
-						"x": 256,
-						"y": 128
+						"x": 112,
+						"y": 64
 					},
 					"leftSidedef": null,
 					"rightSidedef": null
 				}
 			],
-			"floorHeight": "0",
-			"ceilingHeight": "20"
-		},
-		{
-			"id": 3,
-			"linedefs": [
-				{
-					"id": 18,
-					"startVertex": {
-						"id": 15,
-						"x": 272,
-						"y": 144
-					},
-					"endVertex": {
-						"id": 16,
-						"x": 272,
-						"y": 240
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 19,
-					"startVertex": {
-						"id": 16,
-						"x": 272,
-						"y": 240
-					},
-					"endVertex": {
-						"id": 17,
-						"x": 304,
-						"y": 240
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				},
-				{
-					"id": 20,
-					"startVertex": {
-						"id": 17,
-						"x": 304,
-						"y": 240
-					},
-					"endVertex": {
-						"id": 14,
-						"x": 304,
-						"y": 144
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 16,
-					"startVertex": {
-						"id": 14,
-						"x": 304,
-						"y": 144
-					},
-					"endVertex": {
-						"id": 15,
-						"x": 272,
-						"y": 144
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				}
-			],
-			"floorHeight": "0",
-			"ceilingHeight": "20"
-		},
-		{
-			"id": 4,
-			"linedefs": [
-				{
-					"id": 21,
-					"startVertex": {
-						"id": 16,
-						"x": 272,
-						"y": 240
-					},
-					"endVertex": {
-						"id": 18,
-						"x": 256,
-						"y": 256
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 22,
-					"startVertex": {
-						"id": 18,
-						"x": 256,
-						"y": 256
-					},
-					"endVertex": {
-						"id": 19,
-						"x": 160,
-						"y": 256
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 23,
-					"startVertex": {
-						"id": 19,
-						"x": 160,
-						"y": 256
-					},
-					"endVertex": {
-						"id": 20,
-						"x": 160,
-						"y": 336
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 24,
-					"startVertex": {
-						"id": 20,
-						"x": 160,
-						"y": 336
-					},
-					"endVertex": {
-						"id": 21,
-						"x": 384,
-						"y": 336
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 25,
-					"startVertex": {
-						"id": 21,
-						"x": 384,
-						"y": 336
-					},
-					"endVertex": {
-						"id": 22,
-						"x": 384,
-						"y": 256
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				},
-				{
-					"id": 26,
-					"startVertex": {
-						"id": 22,
-						"x": 384,
-						"y": 256
-					},
-					"endVertex": {
-						"id": 23,
-						"x": 320,
-						"y": 256
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 27,
-					"startVertex": {
-						"id": 23,
-						"x": 320,
-						"y": 256
-					},
-					"endVertex": {
-						"id": 17,
-						"x": 304,
-						"y": 240
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 19,
-					"startVertex": {
-						"id": 16,
-						"x": 272,
-						"y": 240
-					},
-					"endVertex": {
-						"id": 17,
-						"x": 304,
-						"y": 240
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				}
-			],
-			"floorHeight": "0",
-			"ceilingHeight": "20"
-		},
-		{
-			"id": 5,
-			"linedefs": [
-				{
-					"id": 28,
-					"startVertex": {
-						"id": 22,
-						"x": 384,
-						"y": 256
-					},
-					"endVertex": {
-						"id": 24,
-						"x": 416,
-						"y": 272
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 29,
-					"startVertex": {
-						"id": 24,
-						"x": 416,
-						"y": 272
-					},
-					"endVertex": {
-						"id": 25,
-						"x": 416,
-						"y": 320
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				},
-				{
-					"id": 30,
-					"startVertex": {
-						"id": 25,
-						"x": 416,
-						"y": 320
-					},
-					"endVertex": {
-						"id": 21,
-						"x": 384,
-						"y": 336
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 25,
-					"startVertex": {
-						"id": 21,
-						"x": 384,
-						"y": 336
-					},
-					"endVertex": {
-						"id": 22,
-						"x": 384,
-						"y": 256
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				}
-			],
-			"floorHeight": "0",
-			"ceilingHeight": "20"
-		},
-		{
-			"id": 6,
-			"linedefs": [
-				{
-					"id": 31,
-					"startVertex": {
-						"id": 24,
-						"x": 416,
-						"y": 272
-					},
-					"endVertex": {
-						"id": 26,
-						"x": 544,
-						"y": 192
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 32,
-					"startVertex": {
-						"id": 26,
-						"x": 544,
-						"y": 192
-					},
-					"endVertex": {
-						"id": 27,
-						"x": 544,
-						"y": 240
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				},
-				{
-					"id": 33,
-					"startVertex": {
-						"id": 27,
-						"x": 544,
-						"y": 240
-					},
-					"endVertex": {
-						"id": 25,
-						"x": 416,
-						"y": 320
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 29,
-					"startVertex": {
-						"id": 24,
-						"x": 416,
-						"y": 272
-					},
-					"endVertex": {
-						"id": 25,
-						"x": 416,
-						"y": 320
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				}
-			],
-			"floorHeight": "0",
-			"ceilingHeight": "20"
-		},
-		{
-			"id": 7,
-			"linedefs": [
-				{
-					"id": 34,
-					"startVertex": {
-						"id": 26,
-						"x": 544,
-						"y": 192
-					},
-					"endVertex": {
-						"id": 28,
-						"x": 544,
-						"y": 128
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 35,
-					"startVertex": {
-						"id": 28,
-						"x": 544,
-						"y": 128
-					},
-					"endVertex": {
-						"id": 29,
-						"x": 640,
-						"y": 128
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				},
-				{
-					"id": 36,
-					"startVertex": {
-						"id": 29,
-						"x": 640,
-						"y": 128
-					},
-					"endVertex": {
-						"id": 30,
-						"x": 640,
-						"y": 288
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 37,
-					"startVertex": {
-						"id": 30,
-						"x": 640,
-						"y": 288
-					},
-					"endVertex": {
-						"id": 31,
-						"x": 544,
-						"y": 288
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 38,
-					"startVertex": {
-						"id": 31,
-						"x": 544,
-						"y": 288
-					},
-					"endVertex": {
-						"id": 27,
-						"x": 544,
-						"y": 240
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 32,
-					"startVertex": {
-						"id": 26,
-						"x": 544,
-						"y": 192
-					},
-					"endVertex": {
-						"id": 27,
-						"x": 544,
-						"y": 240
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				}
-			],
-			"floorHeight": "0",
-			"ceilingHeight": "20"
-		},
-		{
-			"id": 8,
-			"linedefs": [
-				{
-					"id": 39,
-					"startVertex": {
-						"id": 12,
-						"x": 320,
-						"y": 96
-					},
-					"endVertex": {
-						"id": 78,
-						"x": 480,
-						"y": 16
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 40,
-					"startVertex": {
-						"id": 78,
-						"x": 480,
-						"y": 16
-					},
-					"endVertex": {
-						"id": 79,
-						"x": 480,
-						"y": 48
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				},
-				{
-					"id": 41,
-					"startVertex": {
-						"id": 79,
-						"x": 480,
-						"y": 48
-					},
-					"endVertex": {
-						"id": 13,
-						"x": 320,
-						"y": 128
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 14,
-					"startVertex": {
-						"id": 12,
-						"x": 320,
-						"y": 96
-					},
-					"endVertex": {
-						"id": 13,
-						"x": 320,
-						"y": 128
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				}
-			],
-			"floorHeight": "0",
-			"ceilingHeight": "20"
-		},
-		{
-			"id": 9,
-			"linedefs": [
-				{
-					"id": 42,
-					"startVertex": {
-						"id": 78,
-						"x": 480,
-						"y": 16
-					},
-					"endVertex": {
-						"id": 80,
-						"x": 608,
-						"y": 16
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 43,
-					"startVertex": {
-						"id": 80,
-						"x": 608,
-						"y": 16
-					},
-					"endVertex": {
-						"id": 81,
-						"x": 576,
-						"y": 48
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				},
-				{
-					"id": 44,
-					"startVertex": {
-						"id": 81,
-						"x": 576,
-						"y": 48
-					},
-					"endVertex": {
-						"id": 79,
-						"x": 480,
-						"y": 48
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 40,
-					"startVertex": {
-						"id": 78,
-						"x": 480,
-						"y": 16
-					},
-					"endVertex": {
-						"id": 79,
-						"x": 480,
-						"y": 48
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				}
-			],
-			"floorHeight": "0",
-			"ceilingHeight": "20"
-		},
-		{
-			"id": 10,
-			"linedefs": [
-				{
-					"id": 45,
-					"startVertex": {
-						"id": 81,
-						"x": 576,
-						"y": 48
-					},
-					"endVertex": {
-						"id": 82,
-						"x": 576,
-						"y": 112
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 46,
-					"startVertex": {
-						"id": 82,
-						"x": 576,
-						"y": 112
-					},
-					"endVertex": {
-						"id": 83,
-						"x": 608,
-						"y": 112
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				},
-				{
-					"id": 47,
-					"startVertex": {
-						"id": 83,
-						"x": 608,
-						"y": 112
-					},
-					"endVertex": {
-						"id": 80,
-						"x": 608,
-						"y": 16
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 43,
-					"startVertex": {
-						"id": 80,
-						"x": 608,
-						"y": 16
-					},
-					"endVertex": {
-						"id": 81,
-						"x": 576,
-						"y": 48
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				}
-			],
-			"floorHeight": "0",
-			"ceilingHeight": "20"
-		},
-		{
-			"id": 11,
-			"linedefs": [
-				{
-					"id": 48,
-					"startVertex": {
-						"id": 82,
-						"x": 576,
-						"y": 112
-					},
-					"endVertex": {
-						"id": 28,
-						"x": 544,
-						"y": 128
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 35,
-					"startVertex": {
-						"id": 28,
-						"x": 544,
-						"y": 128
-					},
-					"endVertex": {
-						"id": 29,
-						"x": 640,
-						"y": 128
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				},
-				{
-					"id": 49,
-					"startVertex": {
-						"id": 29,
-						"x": 640,
-						"y": 128
-					},
-					"endVertex": {
-						"id": 83,
-						"x": 608,
-						"y": 112
-					},
-					"leftSidedef": "#cccccc",
-					"rightSidedef": "#cccccc"
-				},
-				{
-					"id": 46,
-					"startVertex": {
-						"id": 82,
-						"x": 576,
-						"y": 112
-					},
-					"endVertex": {
-						"id": 83,
-						"x": 608,
-						"y": 112
-					},
-					"leftSidedef": null,
-					"rightSidedef": null
-				}
-			],
-			"floorHeight": "0",
-			"ceilingHeight": "20"
+			"floorHeight": 0,
+			"ceilingHeight": 20
 		}
 	],
 	"things": [
 		{
 			"id": 0,
-			"x": 145.5,
-			"y": 112.5,
+			"x": 48.5,
+			"y": 48.5,
 			"sprite": "PLAY",
 			"type": "player_starts",
 			"hex": "1"
@@ -1752,8 +1074,8 @@ var Main = function () {
         this.perspectiveCamera = new _camera.PerspectiveCamera(600, 600, 0, 0, 0);
         this.player = new _player2.default(0, 200, 0);
         this.map = (0, _jsonToMap2.default)(_map2.default);
-        this.gameLoop();
         this.setupThings();
+        this.gameLoop();
     }
 
     _createClass(Main, [{

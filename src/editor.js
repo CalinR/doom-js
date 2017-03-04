@@ -5,6 +5,7 @@ import LinedefModal from './linedefModal'
 import EditableMap from './editableMap'
 import ThingSelector from './thingSelector'
 import Thing from './thing'
+// import map1 from './map1.json'
 
 class Editor {
     constructor(){
@@ -52,10 +53,17 @@ class Editor {
         document.getElementsByClassName('editor-container')[0].appendChild(this.canvas);
         document.getElementById('select').checked = 'true';
 
+        // Testing
+        // let json = EditableMap.fromJSON(map1);
+        // this.sectors = json.sectors;
+        // this.things = json.things;
+
         this.drawGrid();
         this.bindMouse();
         this.update();
         this.updateUI();
+
+        
     }
 
     get tool(){
@@ -384,6 +392,49 @@ class Editor {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
+    save(){
+        let json = EditableMap.toJSON(this.sectors, this.things);
+        let file = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json, null, '\t'));
+        let filename = prompt("Enter Filename", "level1");
+        if(filename){
+            let downloadAnchor = document.getElementById('download');
+            downloadAnchor.setAttribute('href', file);
+            downloadAnchor.setAttribute('download', `${filename}.json`);
+            downloadAnchor.click();
+        }
+    }
+
+    load(event){
+        var reader = new FileReader();
+        reader.onload = (e) => {
+            ClearMap();
+            this.things = [];
+            window.things = [];
+            let json = JSON.parse(e.target.result);
+            json = EditableMap.fromJSON(json);
+            this.sectors = json.sectors;
+            this.things = json.things;
+        }
+        reader.readAsText(event.target.files[0]);
+    }
+
+    drawTools(){
+        if(this.hoverPoint){
+            this.context.fillStyle = '#fff';
+            this.context.fillRect((this.hoverPoint.x * this.gridScale)-4, (this.hoverPoint.y * this.gridScale)-4, 8, 8);
+        }
+    }
+
+    edit(){
+        let editType = this.selectedObject ? this.selectedObject.type() : null;
+        if(editType == 'sector'){
+            this.sectorModal.changeSector(this.selectedObject);
+        }
+        else if(editType == 'linedef'){
+            this.linedefModal.changeLinedef(this.selectedObject);
+        }
+    }
+
     drawSectors(){
         for(let sector of this.sectors){
             if(sector.closed){
@@ -436,49 +487,6 @@ class Editor {
                 this.context.stroke();
                 this.context.closePath();
             }            
-        }
-    }
-
-    save(){
-        let json = EditableMap.toJSON(this.sectors, this.things);
-        let file = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json, null, '\t'));
-        let filename = prompt("Enter Filename", "level1");
-        if(filename){
-            let downloadAnchor = document.getElementById('download');
-            downloadAnchor.setAttribute('href', file);
-            downloadAnchor.setAttribute('download', `${filename}.json`);
-            downloadAnchor.click();
-        }
-    }
-
-    load(event){
-        var reader = new FileReader();
-        reader.onload = (e) => {
-            ClearMap();
-            this.things = [];
-            window.things = [];
-            let json = JSON.parse(e.target.result);
-            json = EditableMap.fromJSON(json);
-            this.sectors = json.sectors;
-            this.things = json.things;
-        }
-        reader.readAsText(event.target.files[0]);
-    }
-
-    drawTools(){
-        if(this.hoverPoint){
-            this.context.fillStyle = '#fff';
-            this.context.fillRect((this.hoverPoint.x * this.gridScale)-4, (this.hoverPoint.y * this.gridScale)-4, 8, 8);
-        }
-    }
-
-    edit(){
-        let editType = this.selectedObject ? this.selectedObject.type() : null;
-        if(editType == 'sector'){
-            this.sectorModal.changeSector(this.selectedObject);
-        }
-        else if(editType == 'linedef'){
-            this.linedefModal.changeLinedef(this.selectedObject);
         }
     }
 
@@ -559,7 +567,6 @@ class Editor {
     }
 
     updateUI(){
-        // console.log('updated ui');
         this.ui.edit.style.display = this.selectedObject ? '' : 'none';
         this.ui.editButton.style.display = this.selectedObject ? '' : 'none';
         this.ui.editButton.innerHTML = `Edit ${this.selectedObject ? this.selectedObject.toString() : ''}`;

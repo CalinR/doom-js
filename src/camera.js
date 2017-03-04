@@ -119,6 +119,7 @@ export class PerspectiveCamera extends Camera {
         this.rotation = rotation;
         this.aspect = (width / height);
         this.nearPlane = height / (2 / this.aspect); // This is some crappy math to always force a 90 degree FOV
+        this.drawCache = [];
     }
 
     get radians(){
@@ -151,7 +152,7 @@ export class PerspectiveCamera extends Camera {
 
         return {
             x: -(vertex.x * r) + originX,
-            y: ((height - 10) * r) + originY,
+            y: -((height-10)  * r) + originY,
             z: vertex.y
         }
     }
@@ -159,10 +160,64 @@ export class PerspectiveCamera extends Camera {
     render(map){
         let originX = this.canvas.width / 2;
         let originY = this.canvas.height / 2;
+        this.drawCache = [];
 
         this.clear();
+
+        this.drawSector(map, 0);
         
-        for(let sector of map.sectors){
+        // for(let sector of map.sectors){
+        //     let floorHeight = sector.floorHeight;
+        //     let ceilingHeight = sector.ceilingHeight;
+        //     for(let linedef of sector.linedefs){
+        //         if(linedef.leftSidedef){
+        //             let point1 = this.transformVertex(linedef.vertices[0]);
+        //             let point2 = this.transformVertex(linedef.vertices[1]);
+        //             let color = linedef.leftSidedef;
+
+        //             if(point1.y > 0 || point2.y > 0){
+        //                 if(point1.y<0){
+        //                     let xDiff = point1.x - point2.x;
+        //                     let yDiff = point1.y - point2.y;
+        //                     let slope = xDiff / yDiff;
+        //                     let clipY = point2.y;
+        //                     point1.y = 1;
+        //                     point1.x = point2.x - point2.y * slope;
+        //                 }
+        //                 if(point2.y<0){
+        //                     let xDiff = point1.x - point2.x;
+        //                     let yDiff = point1.y - point2.y;
+        //                     let slope = xDiff / yDiff;
+        //                     point2.y = 1;
+        //                     point2.x = point1.x - point1.y * slope;
+        //                 }
+
+        //                 let vertex1 = this.projectVertex(point1, floorHeight);
+        //                 let vertex2 = this.projectVertex(point2, floorHeight);
+        //                 let vertex3 = this.projectVertex(point2, ceilingHeight);
+        //                 let vertex4 = this.projectVertex(point1, ceilingHeight);
+
+        //                 this.context.beginPath();
+        //                 this.context.strokeStyle = '#000';
+        //                 this.context.fillStyle = color;
+        //                 this.context.moveTo(vertex1.x, vertex1.y);
+        //                 this.context.lineTo(vertex2.x, vertex2.y);
+        //                 this.context.lineTo(vertex3.x, vertex3.y);
+        //                 this.context.lineTo(vertex4.x, vertex4.y);
+        //                 this.context.lineTo(vertex1.x, vertex1.y);
+        //                 this.context.stroke();
+        //                 this.context.fill();
+        //                 this.context.closePath();
+        //             }
+        //         }
+        //     }
+        // }
+    }
+
+    drawSector(map, index){
+        let sector = map.sectors[index];
+
+        if(sector){
             let floorHeight = sector.floorHeight;
             let ceilingHeight = sector.ceilingHeight;
             for(let linedef of sector.linedefs){
@@ -193,20 +248,60 @@ export class PerspectiveCamera extends Camera {
                         let vertex3 = this.projectVertex(point2, ceilingHeight);
                         let vertex4 = this.projectVertex(point1, ceilingHeight);
 
-                        this.context.beginPath();
-                        this.context.strokeStyle = '#000';
-                        this.context.fillStyle = color;
-                        this.context.moveTo(vertex1.x, vertex1.y);
-                        this.context.lineTo(vertex2.x, vertex2.y);
-                        this.context.lineTo(vertex3.x, vertex3.y);
-                        this.context.lineTo(vertex4.x, vertex4.y);
-                        this.context.lineTo(vertex1.x, vertex1.y);
-                        this.context.stroke();
-                        this.context.fill();
-                        this.context.closePath();
+                        if((vertex1.x > 0 || vertex2.x > 0) && (vertex1.x < this.canvas.width || vertex2.x < this.canvas.width)){
+                            let left = 0;
+                            let right = 0;
+                            let startHeight = 0;
+                            let endHeight = 0;
+                            let startY = 0;
+
+                            if(vertex1.x < vertex2.x){
+                                left = Math.floor(vertex1.x);
+                                right = Math.ceil(vertex2.x);
+                                startHeight = vertex1.y - vertex4.y;
+                                endHeight = vertex2.y - vertex3.y;
+                                startY = vertex4.y;
+                            }
+                            else {
+                                left = Math.floor(vertex2.x);
+                                right = Math.ceil(vertex1.x);
+                                startHeight = vertex2.y - vertex3.y;
+                                endHeight = vertex1.y - vertex4.y;
+                                startY = vertex3.y;
+                            }
+                            let columns = right - left;
+                            let heightDiff = (startHeight - endHeight) / columns;
+                            this.context.fillStyle = color;
+
+                            for(let i=0; i<columns; i++){
+                                if(left+i >= 0 && left+i <= this.canvas.width){
+                                    let yDecrease = heightDiff * i;
+                                    this.context.fillRect(left+i, startY + (yDecrease/2), 1, startHeight - yDecrease);
+                                }
+                            }                            
+
+                            this.context.beginPath();
+                            this.context.strokeStyle = '#000';
+                            this.context.moveTo(vertex1.x, vertex1.y);
+                            this.context.lineTo(vertex2.x, vertex2.y);
+                            this.context.lineTo(vertex3.x, vertex3.y);
+                            this.context.lineTo(vertex4.x, vertex4.y);
+                            this.context.lineTo(vertex1.x, vertex1.y);
+                            this.context.stroke();
+                            this.context.closePath();
+                        }
                     }
                 }
             }
+            let newIndex = index + 1;
+            this.drawSector(map, newIndex);
+
+            // console.log(this.drawCache);
+
+            // setTimeout(() => {
+            //     let newIndex = index + 1;
+            //     this.drawSector(map, newIndex);
+            // }, 5000)
         }
     }
 }

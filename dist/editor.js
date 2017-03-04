@@ -628,6 +628,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+// import map1 from './map1.json'
+
 var Editor = function () {
     function Editor() {
         _classCallCheck(this, Editor);
@@ -675,6 +677,11 @@ var Editor = function () {
         document.getElementsByClassName('editor-container')[0].appendChild(this.grid);
         document.getElementsByClassName('editor-container')[0].appendChild(this.canvas);
         document.getElementById('select').checked = 'true';
+
+        // Testing
+        // let json = EditableMap.fromJSON(map1);
+        // this.sectors = json.sectors;
+        // this.things = json.things;
 
         this.drawGrid();
         this.bindMouse();
@@ -1241,6 +1248,54 @@ var Editor = function () {
             this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
     }, {
+        key: 'save',
+        value: function save() {
+            var json = _editableMap2.default.toJSON(this.sectors, this.things);
+            var file = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json, null, '\t'));
+            var filename = prompt("Enter Filename", "level1");
+            if (filename) {
+                var downloadAnchor = document.getElementById('download');
+                downloadAnchor.setAttribute('href', file);
+                downloadAnchor.setAttribute('download', filename + '.json');
+                downloadAnchor.click();
+            }
+        }
+    }, {
+        key: 'load',
+        value: function load(event) {
+            var _this2 = this;
+
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                (0, _editorObjects.ClearMap)();
+                _this2.things = [];
+                window.things = [];
+                var json = JSON.parse(e.target.result);
+                json = _editableMap2.default.fromJSON(json);
+                _this2.sectors = json.sectors;
+                _this2.things = json.things;
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+    }, {
+        key: 'drawTools',
+        value: function drawTools() {
+            if (this.hoverPoint) {
+                this.context.fillStyle = '#fff';
+                this.context.fillRect(this.hoverPoint.x * this.gridScale - 4, this.hoverPoint.y * this.gridScale - 4, 8, 8);
+            }
+        }
+    }, {
+        key: 'edit',
+        value: function edit() {
+            var editType = this.selectedObject ? this.selectedObject.type() : null;
+            if (editType == 'sector') {
+                this.sectorModal.changeSector(this.selectedObject);
+            } else if (editType == 'linedef') {
+                this.linedefModal.changeLinedef(this.selectedObject);
+            }
+        }
+    }, {
         key: 'drawSectors',
         value: function drawSectors() {
             var _iteratorNormalCompletion13 = true;
@@ -1334,54 +1389,6 @@ var Editor = function () {
                         throw _iteratorError13;
                     }
                 }
-            }
-        }
-    }, {
-        key: 'save',
-        value: function save() {
-            var json = _editableMap2.default.toJSON(this.sectors, this.things);
-            var file = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(json, null, '\t'));
-            var filename = prompt("Enter Filename", "level1");
-            if (filename) {
-                var downloadAnchor = document.getElementById('download');
-                downloadAnchor.setAttribute('href', file);
-                downloadAnchor.setAttribute('download', filename + '.json');
-                downloadAnchor.click();
-            }
-        }
-    }, {
-        key: 'load',
-        value: function load(event) {
-            var _this2 = this;
-
-            var reader = new FileReader();
-            reader.onload = function (e) {
-                (0, _editorObjects.ClearMap)();
-                _this2.things = [];
-                window.things = [];
-                var json = JSON.parse(e.target.result);
-                json = _editableMap2.default.fromJSON(json);
-                _this2.sectors = json.sectors;
-                _this2.things = json.things;
-            };
-            reader.readAsText(event.target.files[0]);
-        }
-    }, {
-        key: 'drawTools',
-        value: function drawTools() {
-            if (this.hoverPoint) {
-                this.context.fillStyle = '#fff';
-                this.context.fillRect(this.hoverPoint.x * this.gridScale - 4, this.hoverPoint.y * this.gridScale - 4, 8, 8);
-            }
-        }
-    }, {
-        key: 'edit',
-        value: function edit() {
-            var editType = this.selectedObject ? this.selectedObject.type() : null;
-            if (editType == 'sector') {
-                this.sectorModal.changeSector(this.selectedObject);
-            } else if (editType == 'linedef') {
-                this.linedefModal.changeLinedef(this.selectedObject);
             }
         }
     }, {
@@ -1490,7 +1497,6 @@ var Editor = function () {
     }, {
         key: 'updateUI',
         value: function updateUI() {
-            // console.log('updated ui');
             this.ui.edit.style.display = this.selectedObject ? '' : 'none';
             this.ui.editButton.style.display = this.selectedObject ? '' : 'none';
             this.ui.editButton.innerHTML = 'Edit ' + (this.selectedObject ? this.selectedObject.toString() : '');
