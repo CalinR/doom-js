@@ -7,7 +7,7 @@ class Player extends GameObject {
         this.speed = 0;
         this.direction = 0;
         this.moveSpeed = 75;
-        this.rotationSpeed = 90;
+        this.rotationSpeed = 180;
         this.bindControls();
     }
 
@@ -55,6 +55,7 @@ class Player extends GameObject {
 
     update(){
         this.rotation += (this.direction * this.rotationSpeed) * window.deltaTime;
+        // this.rotation = Math.round(this.rotation);
         
         if(this.rotation > 360){
             this.rotation = 0;

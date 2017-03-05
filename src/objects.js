@@ -25,6 +25,13 @@ export class LineDef {
         this.rightSidedef = rightSidedef;
         window.linedefs.push(this);
     }
+
+    length(){
+        let xDiff = this.vertices[0].x - this.vertices[1].x;
+        let yDiff = this.vertices[0].y - this.vertices[1].y;
+
+        return Math.sqrt((xDiff * xDiff) + (yDiff * yDiff));
+    }
 }
 
 export class Vertex {

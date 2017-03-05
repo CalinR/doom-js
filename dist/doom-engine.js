@@ -85,13 +85,10 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-window.nearPlane = 300;
-
 /**
  * STANDARD CAMERA
  * above view camera
  */
-
 var Camera = exports.Camera = function () {
     function Camera() {
         var width = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 100;
@@ -353,7 +350,7 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
         value: function projectVertex(vertex, height) {
             var originX = this.canvas.width / 2;
             var originY = this.canvas.height / 2;
-            var r = window.nearPlane / vertex.y;
+            var r = this.nearPlane / vertex.y;
 
             return {
                 x: -(vertex.x * r) + originX,
@@ -398,6 +395,9 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
     }, {
         key: 'drawSector',
         value: function drawSector(map, index) {
+            var originX = this.canvas.width / 2;
+            var originY = this.canvas.height / 2;
+
             var sector = map.sectors[index];
 
             if (sector) {
@@ -416,16 +416,19 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
                             var point2 = this.transformVertex(linedef.vertices[1]);
                             var color = linedef.leftSidedef;
 
-                            if (point1.y > 0 || point2.y > 0) {
-                                if (point1.y < 0) {
+                            var p1Angle = Math.atan2(originX - point1.x, originY - point1.y) * 180 / Math.PI;
+                            var p2Angle = Math.atan2(originX - point2.x, originY - point2.y) * 180 / Math.PI;
+
+                            if (p1Angle > 45 || p2Angle > 45) {
+                                // if(point1.y > 0 || point2.y > 0){
+                                if (point1.y < 1) {
                                     var xDiff = point1.x - point2.x;
                                     var yDiff = point1.y - point2.y;
                                     var slope = xDiff / yDiff;
-                                    var clipY = point2.y;
                                     point1.y = 1;
                                     point1.x = point2.x - point2.y * slope;
                                 }
-                                if (point2.y < 0) {
+                                if (point2.y < 1) {
                                     var _xDiff3 = point1.x - point2.x;
                                     var _yDiff3 = point1.y - point2.y;
                                     var _slope3 = _xDiff3 / _yDiff3;
@@ -433,66 +436,93 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
                                     point2.x = point1.x - point1.y * _slope3;
                                 }
 
-                                var vertex1 = this.projectVertex(point1, floorHeight);
-                                var vertex2 = this.projectVertex(point2, floorHeight);
-                                var vertex3 = this.projectVertex(point2, ceilingHeight);
-                                var vertex4 = this.projectVertex(point1, ceilingHeight);
-
-                                if ((vertex1.x > 0 || vertex2.x > 0) && (vertex1.x < this.canvas.width || vertex2.x < this.canvas.width)) {
-                                    var left = 0;
-                                    var right = 0;
-                                    var startHeight = 0;
-                                    var endHeight = 0;
-                                    var startY = 0;
-                                    var columnWidth = 2;
-
-                                    // Clip vertices to edge of viewport to prevent unnecessary drawing
-                                    vertex1 = this.clipVertex(vertex1, vertex2);
-                                    vertex2 = this.clipVertex(vertex2, vertex1);
-                                    vertex3 = this.clipVertex(vertex3, vertex4);
-                                    vertex4 = this.clipVertex(vertex4, vertex3);
-
-                                    if (vertex1.x < vertex2.x) {
-                                        left = Math.floor(vertex1.x);
-                                        right = Math.ceil(vertex2.x);
-
-                                        startHeight = vertex1.y - vertex4.y;
-                                        endHeight = vertex2.y - vertex3.y;
-
-                                        startY = vertex4.y;
-                                    } else {
-                                        left = Math.floor(vertex2.x);
-                                        right = Math.ceil(vertex1.x);
-                                        startHeight = vertex2.y - vertex3.y;
-                                        endHeight = vertex1.y - vertex4.y;
-
-                                        startY = vertex3.y;
-                                    }
-
-                                    var columns = (right - left) / columnWidth;
-                                    var heightDiff = (startHeight - endHeight) / columns;
-                                    this.context.fillStyle = color;
-
-                                    for (var i = 0; i < columns; i++) {
-                                        var c = i * columnWidth;
-                                        if (left + c >= 0 && left + c <= this.canvas.width) {
-                                            var yDecrease = heightDiff * i;
-                                            this.context.fillRect(left + c, startY + yDecrease / 2, columnWidth, startHeight - yDecrease);
-                                        }
-                                    }
+                                if (point1.y == 1 && point2.y == 1) {} else {
+                                    // console.log(point1, point2, color, point1.y == 1 && point2.y ==1);
 
                                     // this.context.beginPath();
-                                    // this.context.strokeStyle = '#000';
-                                    // this.context.moveTo(vertex1.x, vertex1.y);
-                                    // this.context.lineTo(vertex2.x, vertex2.y);
-                                    // this.context.lineTo(vertex3.x, vertex3.y);
-                                    // this.context.lineTo(vertex4.x, vertex4.y);
-                                    // this.context.lineTo(vertex1.x, vertex1.y);
+                                    // this.context.strokeStyle = color;
+                                    // this.context.moveTo(originX - point1.x, originY - point1.y);
+                                    // this.context.lineTo(originX - point2.x, originY - point2.y);
                                     // this.context.stroke();
                                     // this.context.closePath();
+
+                                    var vertex1 = this.projectVertex(point1, floorHeight);
+                                    var vertex2 = this.projectVertex(point2, floorHeight);
+                                    var vertex3 = this.projectVertex(point2, ceilingHeight);
+                                    var vertex4 = this.projectVertex(point1, ceilingHeight);
+
+                                    if ((vertex1.x > 0 || vertex2.x > 0) && (vertex1.x < this.canvas.width || vertex2.x < this.canvas.width)) {
+
+                                        var _xDiff4 = point1.x - point2.x;
+                                        var _yDiff4 = point1.y - point2.y;
+                                        var leftX = vertex1.x < vertex2.x ? vertex1.x : vertex2.x;
+                                        var length = Math.sqrt(_xDiff4 * _xDiff4 + _yDiff4 * _yDiff4);
+                                        var textureOffset = leftX < 0 ? linedef.length() - length : 0;
+                                        // console.log(linedef.length(), length, textureOffset);
+
+
+                                        var left = 0;
+                                        var right = 0;
+                                        var startHeight = 0;
+                                        var endHeight = 0;
+                                        var startY = 0;
+                                        var columnWidth = 2;
+
+                                        // Clip vertices to edge of viewport to prevent unnecessary drawing
+                                        // This needs to be optimized and be part of the projectedVertex method. Clip linedefs where they interesect with the players fov
+                                        // vertex1 = this.clipVertex(vertex1, vertex2);
+                                        // vertex2 = this.clipVertex(vertex2, vertex1);
+                                        // vertex3 = this.clipVertex(vertex3, vertex4);
+                                        // vertex4 = this.clipVertex(vertex4, vertex3);
+
+                                        if (vertex1.x < vertex2.x) {
+                                            left = Math.floor(vertex1.x);
+                                            right = Math.ceil(vertex2.x);
+
+                                            startHeight = vertex1.y - vertex4.y;
+                                            endHeight = vertex2.y - vertex3.y;
+
+                                            startY = vertex4.y;
+                                        } else {
+                                            left = Math.floor(vertex2.x);
+                                            right = Math.ceil(vertex1.x);
+                                            startHeight = vertex2.y - vertex3.y;
+                                            endHeight = vertex1.y - vertex4.y;
+
+                                            startY = vertex3.y;
+                                        }
+
+                                        var columns = (right - left) / columnWidth;
+                                        var heightDiff = (startHeight - endHeight) / columns;
+
+                                        this.context.fillStyle = color;
+
+                                        for (var i = 0; i < columns; i++) {
+                                            var c = i * columnWidth;
+                                            if (left + c >= 0 && left + c <= this.canvas.width) {
+                                                var yDecrease = heightDiff * i;
+                                                this.context.fillRect(left + c, startY + yDecrease / 2, columnWidth, startHeight - yDecrease);
+                                                if (window.wallTexture) {
+                                                    this.context.drawImage(window.wallTexture, i * columnWidth, 0, columnWidth, window.wallTexture.height, left + c, startY + yDecrease / 2, columnWidth, startHeight - yDecrease);
+                                                }
+                                                // this.context.fillRect(left+c, startY + (yDecrease/2), columnWidth, startHeight - yDecrease);
+                                            }
+                                        }
+
+                                        // this.context.beginPath();
+                                        // this.context.strokeStyle = '#000';
+                                        // this.context.moveTo(vertex1.x, vertex1.y);
+                                        // this.context.lineTo(vertex2.x, vertex2.y);
+                                        // this.context.lineTo(vertex3.x, vertex3.y);
+                                        // this.context.lineTo(vertex4.x, vertex4.y);
+                                        // this.context.lineTo(vertex1.x, vertex1.y);
+                                        // this.context.stroke();
+                                        // this.context.closePath();
+                                    }
                                 }
                             }
                         }
+                        // break;
                     }
                 } catch (err) {
                     _didIteratorError5 = true;
@@ -517,7 +547,7 @@ var PerspectiveCamera = exports.PerspectiveCamera = function (_Camera2) {
                 // setTimeout(() => {
                 //     let newIndex = index + 1;
                 //     this.drawSector(map, newIndex);
-                // }, 5000)
+                // }, 1000)
             }
         }
     }, {
@@ -578,7 +608,7 @@ var Player = function (_GameObject) {
         _this.speed = 0;
         _this.direction = 0;
         _this.moveSpeed = 75;
-        _this.rotationSpeed = 90;
+        _this.rotationSpeed = 180;
         _this.bindControls();
         return _this;
     }
@@ -640,6 +670,7 @@ var Player = function (_GameObject) {
         key: 'update',
         value: function update() {
             this.rotation += this.direction * this.rotationSpeed * window.deltaTime;
+            // this.rotation = Math.round(this.rotation);
 
             if (this.rotation > 360) {
                 this.rotation = 0;
@@ -1053,6 +1084,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var Main = function () {
     function Main() {
+        var _this = this;
+
         _classCallCheck(this, Main);
 
         window.deltaTime = 0;
@@ -1060,10 +1093,16 @@ var Main = function () {
         this.camera = new _camera.Camera(300, 300);
         this.followCamera = new _camera.FollowCamera(300, 300);
         this.perspectiveCamera = new _camera.PerspectiveCamera(600, 600, 0, 0, 0);
-        this.player = new _player2.default(0, 200, 0);
+        this.player = new _player2.default(0, 200, -90);
         this.map = (0, _jsonToMap2.default)(_map2.default);
-        this.setupThings();
-        this.gameLoop();
+        window.wallTexture = null;
+        var wallTexture = new Image();
+        wallTexture.onload = function () {
+            window.wallTexture = wallTexture;
+            _this.setupThings();
+            _this.gameLoop();
+        };
+        wallTexture.src = './assets/wall.png';
     }
 
     _createClass(Main, [{
@@ -1109,7 +1148,7 @@ var Main = function () {
     }, {
         key: 'gameLoop',
         value: function gameLoop() {
-            var _this = this;
+            var _this2 = this;
 
             this.updateDeltaTime();
 
@@ -1142,7 +1181,7 @@ var Main = function () {
             this.perspectiveCamera.render(this.map);
 
             window.requestAnimationFrame(function () {
-                return _this.gameLoop();
+                return _this2.gameLoop();
             });
         }
     }]);
@@ -1162,6 +1201,8 @@ window.game = new Main();
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -1188,19 +1229,33 @@ var Sector = exports.Sector = function Sector(linedefs) {
     window.sectors.push(this);
 };
 
-var LineDef = exports.LineDef = function LineDef(vectors) {
-    var leftSidedef = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '#ccc';
-    var rightSidedef = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '#ccc';
-    var id = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : lineDefId++;
+var LineDef = exports.LineDef = function () {
+    function LineDef(vectors) {
+        var leftSidedef = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '#ccc';
+        var rightSidedef = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '#ccc';
+        var id = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : lineDefId++;
 
-    _classCallCheck(this, LineDef);
+        _classCallCheck(this, LineDef);
 
-    this.id = id;
-    this.vertices = vectors;
-    this.leftSidedef = leftSidedef;
-    this.rightSidedef = rightSidedef;
-    window.linedefs.push(this);
-};
+        this.id = id;
+        this.vertices = vectors;
+        this.leftSidedef = leftSidedef;
+        this.rightSidedef = rightSidedef;
+        window.linedefs.push(this);
+    }
+
+    _createClass(LineDef, [{
+        key: 'length',
+        value: function length() {
+            var xDiff = this.vertices[0].x - this.vertices[1].x;
+            var yDiff = this.vertices[0].y - this.vertices[1].y;
+
+            return Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+        }
+    }]);
+
+    return LineDef;
+}();
 
 var Vertex = exports.Vertex = function Vertex(x, y) {
     var id = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : vertexId++;
